@@ -1,0 +1,37 @@
+DwLoadServer
+============
+
+DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
+
+It's in unuseable, experimental state and currently nothing more then some tests scripts.
+
+
+== current state
+
+Currently the server can only send files to the DWLOAD client.
+
+
+== TODO
+
+* receive files
+* add a CLI
+* maybe use a config.ini file?!?
+
+
+== History
+
+* 12.11.2014 - send a file works rudimentary
+* 30.09.2014 - Idea was born: [[http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946#p11893|Forum post 11893]]
+
+
+== Links
+
+* Forum Thread: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946
+* About DWLOAD: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964
+* DWEEBS application Thread: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968
+* Dragon 32/64 DriveWire Adapter: http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter
+* Drivewire for dummies: http://archive.worldofdragon.org/index.php?title=Drivewire_for_dummies
+* http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/
+* http://sourceforge.net/p/drivewireserver/wiki/
+
+Repository on github: https://github.com/DWLOAD/DwLoadServer
