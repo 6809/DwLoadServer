@@ -9,6 +9,7 @@
     :copyleft: 2014 by the DwLoadServer team, see AUTHORS for more details.
     :license: GNU GPL v3 or above, see LICENSE for more details.
 """
+import argparse
 
 import os
 import logging
@@ -16,10 +17,20 @@ import sys
 import struct
 import math
 
+
 try:
     import serial
 except ImportError as err:
     raise ImportError("%s - Please install PySerial ! - http://pyserial.sourceforge.net" % err)
+
+try:
+    import dragonlib
+except ImportError as err:
+    raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
+
+from dragonlib.api import Dragon32API as Api
+from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
+
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +117,7 @@ class DwLoadServer(object):
         self.drive_number -= 1
         self.file_info[self.drive_number] = filename
 
-        log.debug("Filename %r attached to drive number: %i", byte_count, self.drive_number)
+        log.info("Filename %r attached to drive number: %i", byte_count, self.drive_number)
         self.write_byte(self.drive_number)
 
     def read_extended_transaction(self):
@@ -120,6 +131,7 @@ class DwLoadServer(object):
         lsn = self.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
         log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
 
+        log.info("Send chunk of file %r", filepath)
         with open(filepath, "rb") as f:
             filesize = os.fstat(f.fileno()).st_size
             chunk_count = math.ceil(filesize / 256)
@@ -152,7 +164,7 @@ class DwLoadServer(object):
         lsn = self.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
         log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
 
-        log.debug("Request chunk data to write:")
+        log.info("Save chunk to: %r", filepath)
         chunk = self.ser.read(size=256)
         with open(filepath, "ab") as f:
             pos = 256 * lsn
@@ -194,27 +206,45 @@ class DwLoadServer(object):
                 ))
 
 
-if __name__ == '__main__':
-    from utils.logging_utils import setup_logging
+def start_server(root_dir, port, log_level=logging.INFO):
+    setup_logging(level=log_level)
 
-    setup_logging(
-        # level=1 # hardcore debug ;)
-        level=10  # DEBUG
-        # level=20  # INFO
-        # level=30  # WARNING
-        # level=40 # ERROR
-        #         level=50 # CRITICAL/FATAL
-    )
-
-    dwload = DwLoadServer(root_dir="dwload-demo-files")
-
-    # TODO: Put in ~/config.ini ?!?
-    if sys.platform == 'win32':
-        port = "COM3"
-    else:
-        port = "/dev/ttyUSB0"
-
+    dwload = DwLoadServer(root_dir=root_dir)
     dwload.connect(port)
     dwload.serve_forever()
+
+
+
+def cli():
+    parser = argparse.ArgumentParser(
+        description="DWLOAD Server written in Python (GNU GPL v3+)"
+        #epilog="foo"
+    )
+
+    parser.add_argument(
+        '--port', action='port',
+        help="Serial port. Windows e.g.: 'COM3' - Linux e.g.: '/dev/ttyUSB0'"
+    )
+    parser.add_argument(
+        '--root_dir', action='root_dir',
+        help="Directory for load/store requested files, e.g.: 'dwload-demo-files'"
+    )
+    parser.add_argument(
+        '--log_level', type=int, choices=LOG_LEVELS, default=logging.INFO,
+        help="Logging level: 10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL/FATAL"
+    )
+
+    args = parser.parse_args()
+
+    start_server(
+        root_dir=args.root_dir,
+        port=args.port,
+        log_level=args.log_level
+    )
+
+
+
+if __name__ == '__main__':
+    cli()
 
     print(" --- END --- ")

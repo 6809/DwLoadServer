@@ -13,8 +13,9 @@ Currently the server can only send files to the DWLOAD client.
 
 == TODO
 
+**TODO:** External {{{dragonlib}}} dependency is needed: https://github.com/6809/dragonlib
+
 * compare checksum
-* receive files
 * add a CLI
 * maybe use a config.ini file?!?
 
