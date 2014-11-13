@@ -65,6 +65,9 @@ class DwLoadServer(object):
         # self.ser = serial.Serial()
         self.ser = DebugSerial()
 
+        self.drive_number = 256
+        self.file_info = {}
+
     def connect(self, port):
         self.ser.port = port
         self.ser.baudrate = 57600
@@ -96,49 +99,77 @@ class DwLoadServer(object):
         content = self.ser.read(byte_count)
         return byte_count, content
 
-    def file_request(self):
+    def handle_filename(self):
         byte_count, content = self.read_block()
-        log.debug("Filename has %i Bytes.", byte_count)
         filename = "".join([chr(i) for i in content])
-        log.debug("Filename: %r", filename)
 
-        self.write_byte(0xff) # XXX: Start transfer?!?
+        self.drive_number -= 1
+        self.file_info[self.drive_number] = filename
 
+        log.debug("Filename %r attached to drive number: %i", byte_count, self.drive_number)
+        self.write_byte(self.drive_number)
+
+    def read_extended_transaction(self):
+        drive_number = self.read_byte()
+        log.debug("Drive Number: $%02x (dez.: %i)", drive_number, drive_number)
+
+        filename = self.file_info[drive_number]
         filepath = os.path.join(self.root_dir, filename)
-        log.debug("Open file: %r", filepath)
+        log.debug("Filename %r path: %r", filename, filepath)
+
+        lsn = self.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
+        log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
+
         with open(filepath, "rb") as f:
             filesize = os.fstat(f.fileno()).st_size
             chunk_count = math.ceil(filesize / 256)
             log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
 
-            while True:
-                extended_transaction = self.read_byte() # XXX
-                if extended_transaction != 0xd2: # dez.: 210
-                    raise NotImplementedError("Transation $%02x (dez.: %i) is not supported, yet." % (
-                        extended_transaction, extended_transaction
-                    ))
+            pos = 256 * lsn
+            log.debug("\tseek to: %i", pos)
+            f.seek(pos)
+            log.debug("\tread 256 bytes")
+            chunk = f.read(256) # TODO: padding to 256 bytes
 
-                drive_number = self.read_byte()
-                log.debug("Drive Number: $%02x (dez.: %i)", drive_number, drive_number)
+        self.ser.write(chunk)
 
-                lsn = self.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
-                log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
+        client_checksum = self.read_integer(size=2) # 16bit checksum calculated by Dragon
+        log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-                f.seek(256 * lsn)
-                chunk = f.read(256) # TODO: padding to 256 bytes
+        self.write_byte(0x00) # confirm checksum
 
-                self.ser.write(chunk)
+        log.debug(" *** block send.")
 
-                client_checksum = self.read_integer(size=2) # 16bit checksum calculated by Dragon
-                log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-                self.write_byte(0x00) # confirm checksum
+    def write_transaction(self):
+        drive_number = self.read_byte()
+        log.debug("Drive Number: $%02x (dez.: %i)", drive_number, drive_number)
 
-                if (lsn + 1) >= chunk_count:
-                    break
+        filename = self.file_info[drive_number]
+        filepath = os.path.join(self.root_dir, filename)
+        log.debug("Filename %r path: %r", filename, filepath)
 
-        log.debug(" *** File content send, complete. *** ")
+        lsn = self.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
+        log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
 
+        log.debug("Request chunk data to write:")
+        chunk = self.ser.read(size=256)
+        with open(filepath, "ab") as f:
+            pos = 256 * lsn
+            log.debug("\tseek to: %i", pos)
+            f.seek(pos)
+            log.debug("\twrite %i bytes", len(chunk))
+            f.write(chunk)
+            f.flush()
+            filesize = os.fstat(f.fileno()).st_size
+        log.debug("Filesize now: %i", filesize)
+
+        client_checksum = self.read_integer(size=2) # 16bit checksum calculated by Dragon
+        log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
+
+        self.write_byte(0x00) # confirm checksum
+
+        log.debug(" *** block written in file.")
 
     def serve_forever(self):
         log.debug("Serve forever")
@@ -146,8 +177,17 @@ class DwLoadServer(object):
             req_type = self.read_byte()
             log.debug("Request type: $%02x", req_type)
             if req_type == 0x01:
-                log.debug(" *** handle file request: *** ")
-                self.file_request()
+                log.debug(" *** handle filename: ***")
+                self.handle_filename()
+
+            elif req_type == 0xd2: # dez.: 210
+                log.debug(" *** Read Extended Transaction: ***")
+                self.read_extended_transaction()
+
+            elif req_type == 0x57: # dez.: 87
+                log.debug(" *** Write Transaction: ***")
+                self.write_transaction()
+
             else:
                 raise NotImplementedError("Request type $%02x (dez.: %i) is not supported, yet." % (
                     req_type, req_type
@@ -160,9 +200,9 @@ if __name__ == '__main__':
     setup_logging(
         # level=1 # hardcore debug ;)
         level=10  # DEBUG
-        #         level=20  # INFO
-        #         level=30  # WARNING
-        #         level=40 # ERROR
+        # level=20  # INFO
+        # level=30  # WARNING
+        # level=40 # ERROR
         #         level=50 # CRITICAL/FATAL
     )
 

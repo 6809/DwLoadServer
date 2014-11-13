@@ -13,6 +13,7 @@ Currently the server can only send files to the DWLOAD client.
 
 == TODO
 
+* compare checksum
 * receive files
 * add a CLI
 * maybe use a config.ini file?!?
