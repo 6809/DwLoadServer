@@ -8,7 +8,24 @@ It's in unuseable, experimental state and currently nothing more then some tests
 
 == current state
 
-Currently the server can only send files to the DWLOAD client.
+Tested DWEEBS:
+
+|= DWEEB     | example                         | Description
+| **DLOAD**  | {{{DLOAD}}}                     | Load {{{AUTOLOAD.DWL}}} (Used on Dragon startup)
+| **RESAVE** | {{{DLOAD"RESAVE""MYFILE.BAS"}}} | Save BASIC listing
+
+
+Implemented DriveWire Transactions:
+
+|= hex |= dez |= DW name         | Description
+| $01  | 1    | OP_NAMEOBJ_MOUNT | Mount a file to a virtual drive number
+| $d2  | 210  | OP_READEX        | Request 256 bytes sector
+
+== TODO
+
+* support {{{SAVE}}}
+* compare checksum
+
 
 == installation
 
@@ -32,6 +49,7 @@ e.g.:
 }}}
 This creates a virtualenv in **{{{~/dwload_server_env}}}** and used the packages from the **Python Package Index**.
 
+
 === startup
 
 Setup server root directory. This is the directory for the files that are interchange with the client.
@@ -47,15 +65,26 @@ To start the server:
 /home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root
 }}}
 
+If you would like to see more debug output:
+{{{
+/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root --log_level 10
+}}}
+
 Display CLI help:
 {{{
 /home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --help
 }}}
 
-== TODO
 
-* compare checksum
-* maybe use a config.ini file?!?
+Maybe it's nice to have a shell script to startup? Take a copy of existing [[https://github.com/DWLOAD/DwLoadServer/blob/master/start_DWLOAD_server.sh|start_DWLOAD_server.sh]] file and change it for your needs, e.g.:
+{{{
+/home/FooBar$ cd ~/dwload_server_env/
+/home/FooBar/dwload_server_env$ wget https://raw.githubusercontent.com/DWLOAD/DwLoadServer/master/start_DWLOAD_server.sh
+
+# Just call (after edit)
+/home/FooBar/dwload_server_env$ ./start_DWLOAD_server.sh
+}}}
+
 
 
 == History
