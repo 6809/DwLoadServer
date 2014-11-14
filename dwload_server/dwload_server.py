@@ -222,15 +222,15 @@ def cli():
     )
 
     parser.add_argument(
-        '--port', action='port',
+        '--port', dest='port', required=True,
         help="Serial port. Windows e.g.: 'COM3' - Linux e.g.: '/dev/ttyUSB0'"
     )
     parser.add_argument(
-        '--root_dir', action='root_dir',
+        '--root_dir', dest='root_dir', required=True,
         help="Directory for load/store requested files, e.g.: 'dwload-demo-files'"
     )
     parser.add_argument(
-        '--log_level', type=int, choices=LOG_LEVELS, default=logging.INFO,
+        '--log_level', dest="log_level", type=int, choices=LOG_LEVELS, default=logging.INFO,
         help="Logging level: 10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL/FATAL"
     )
 
