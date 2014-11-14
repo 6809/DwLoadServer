@@ -19,7 +19,9 @@ Implemented DriveWire Transactions:
 
 |= hex |= dez |= DW name         | Description
 | $01  | 1    | OP_NAMEOBJ_MOUNT | Mount a file to a virtual drive number
-| $d2  | 210  | OP_READEX        | Request 256 bytes sector
+| $d2  | 210  | OP_READEX        | Send 256 bytes sector from the DWLOAD server to the client
+| $57  | 87   | OP_WRITE         | Write 256 bytes sector of data from the client into a file on the server
+
 
 == TODO
 
