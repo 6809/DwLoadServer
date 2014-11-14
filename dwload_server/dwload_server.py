@@ -13,10 +13,10 @@ import argparse
 
 import os
 import logging
+import subprocess
 import sys
 import struct
 import math
-
 
 try:
     import serial
@@ -31,9 +31,13 @@ except ImportError as err:
 from dragonlib.api import Dragon32API as Api
 from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
 
+from dwload_server.pyscript import get_pyscript_stdout
+
 
 log = logging.getLogger(__name__)
 
+
+PY_SCRIPT_TIMEOUT=3
 
 
 # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#appendix-a-error-codes
@@ -151,6 +155,11 @@ class DwLoadServer(object):
         self.drive_number = 256
         self.file_info = {}
 
+    def reset(self):
+        log.debug("Preform a reset.")
+        self.drive_number = 256
+        self.file_info = {}
+
     def connect(self, port):
         self.ser.port = port
         self.ser.baudrate = 57600
@@ -182,7 +191,9 @@ class DwLoadServer(object):
             filename = self.file_info[drive_number]
         except KeyError:
             raise DwNotReadyError(
-                "Drive number %i unknown. Existing IDs: %s", drive_number, ",".join(self.file_info.keys())
+                "Drive number %i unknown. Existing IDs: %s",
+                drive_number,
+                ",".join(["%s" % id for id in self.file_info.keys()])
             )
 
         filepath = os.path.join(self.root_dir, filename)
@@ -197,19 +208,27 @@ class DwLoadServer(object):
         filepath, lsn = self.get_filepath_lsn()
 
         log.info("Send chunk of file %r", filepath)
-        try:
-            with open(filepath, "rb") as f:
-                filesize = os.fstat(f.fileno()).st_size
-                chunk_count = math.ceil(filesize / 256)
-                log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
 
-                pos = 256 * lsn
-                log.debug("\tseek to: %i", pos)
-                f.seek(pos)
-                log.debug("\tread 256 bytes")
-                chunk = f.read(256) # TODO: padding to 256 bytes
-        except OSError as err:
-            raise DwReadError(err)
+        pos = 256 * lsn
+
+        pyscript_content = get_pyscript_stdout(
+            filepath, log_level=self.log_level, timeout=PY_SCRIPT_TIMEOUT
+        )
+        if pyscript_content:
+            chunk=pyscript_content[pos:pos+256]
+        else:
+            try:
+                with open(filepath, "rb") as f:
+                    filesize = os.fstat(f.fileno()).st_size
+                    chunk_count = math.ceil(filesize / 256)
+                    log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
+
+                    log.debug("\tseek to: %i", pos)
+                    f.seek(pos)
+                    log.debug("\tread 256 bytes")
+                    chunk = f.read(256) # TODO: padding to 256 bytes
+            except OSError as err:
+                raise DwReadError(err)
 
         self.ser.write(chunk)
 
@@ -253,7 +272,10 @@ class DwLoadServer(object):
             req_type = self.ser.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
-                if req_type == 0x01: # dez.: 1 - ransaction OP_NAMEOBJ_MOUNT
+                if req_type in (0x00, 0xf8, 0xfe, 0xff): # reset?!?!
+                    self.reset()
+
+                elif req_type == 0x01: # dez.: 1 - ransaction OP_NAMEOBJ_MOUNT
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
                     log.debug(" *** handle filename: ***")
                     self.handle_filename()
@@ -269,7 +291,7 @@ class DwLoadServer(object):
                     self.write_transaction()
 
                 else:
-                    raise NotImplementedError("Request type $%02x (dez.: %i) is not supported, yet." % (
+                    log.error("ERROR: Request type $%02x (dez.: %i) is not supported, yet." % (
                         req_type, req_type
                     ))
             except DwException as err:
