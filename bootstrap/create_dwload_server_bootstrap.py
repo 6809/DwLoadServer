@@ -24,9 +24,16 @@ def get_requirements(filepath):
     requirements=pip.req.parse_requirements(filepath)
     entries = []
     for req in requirements:
-        entry = req.url or req.name
+        if req.editable:
+            # http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs
+            entry = "-e %s" % req.url
+        else:
+            # install as normal PyPi package
+            entry = req.name
+
         print("\t* %r" % entry)
         entries.append(entry)
+
     print()
     return entries
 
