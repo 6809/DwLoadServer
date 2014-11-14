@@ -26,7 +26,7 @@ def get_requirements(filepath):
     for req in requirements:
         if req.editable:
             # http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs
-            entry = "-e %s" % req.url
+            entry = "--editable=%s" % req.url
         else:
             # install as normal PyPi package
             entry = req.name

@@ -1849,17 +1849,17 @@ NORMAL_INSTALLATION = ['pyserial', 'dragonlib', 'dwload-server']
 GIT_READONLY_INSTALLATION = ['pyserial',
  'docutils',
  'virtualenv',
- '-e git+https://github.com/6809/dragonlib.git#egg=dragonlib',
- '-e git+https://github.com/jedie/bootstrap_env.git#egg=bootstrap_env',
- '-e git+https://github.com/DWLOAD/DwLoadServer.git#egg=dwload_server']
+ '--editable=git+https://github.com/6809/dragonlib.git#egg=dragonlib',
+ '--editable=git+https://github.com/jedie/bootstrap_env.git#egg=bootstrap_env',
+ '--editable=git+https://github.com/DWLOAD/DwLoadServer.git#egg=dwload_server']
 
 # requirements from developer_installation.txt
 DEVELOPER_INSTALLATION = ['pyserial',
  'docutils',
  'virtualenv',
- '-e git+git@github.com:6809/dragonlib.git#egg=dragonlib',
- '-e git+git@github.com:jedie/bootstrap_env.git#egg=bootstrap_env',
- '-e git+git@github.com:DWLOAD/DwLoadServer.git#egg=dwload_server']
+ '--editable=git+git@github.com:6809/dragonlib.git#egg=dragonlib',
+ '--editable=git+git@github.com:jedie/bootstrap_env.git#egg=bootstrap_env',
+ '--editable=git+git@github.com:DWLOAD/DwLoadServer.git#egg=dwload_server']
 ###############################################################################
 ## '/home/jens/workspace/DwLoadServer/bootstrap/source_prefix_code.py' START
 # For choosing the installation type:
