@@ -2,9 +2,9 @@
 # coding: utf-8
 
 import os
-import pprint
-import pip
 from bootstrap_env import create_bootstrap
+from bootstrap_env.pip_utils import requirements_definitions
+
 
 REQ_FILENAMES=(
     "normal_installation.txt",
@@ -20,42 +20,9 @@ REQ_BASE_PATH=os.path.abspath(os.path.join(BASE_PATH, "..", "requirements"))
 print("requirement files path: %r" % REQ_BASE_PATH)
 
 
-def get_requirements(filepath):
-    requirements=pip.req.parse_requirements(filepath)
-    entries = []
-    for req in requirements:
-        if req.editable:
-            # http://pip.readthedocs.org/en/latest/reference/pip_install.html#editable-installs
-            entry = "--editable=%s" % req.url
-        else:
-            # install as normal PyPi package
-            entry = req.name
-
-        print("\t* %r" % entry)
-        entries.append(entry)
-
-    print()
-    return entries
-
-
-def requirements_definitions():
-    content = []
-    for filename in REQ_FILENAMES:
-        print("requirements from %r:" % filename)
-        content.append("\n# requirements from %s" % filename)
-        requirements_list = get_requirements(filepath=os.path.join(REQ_BASE_PATH, filename))
-        req_type = os.path.splitext(filename)[0].upper()
-        content.append(
-            "%s = %s" % (req_type, pprint.pformat(requirements_list))
-        )
-
-    return "\n".join(content)
-
-
-
 if __name__ == '__main__':
     prefix_code = "\n".join([
-        requirements_definitions(),
+        requirements_definitions(REQ_BASE_PATH, REQ_FILENAMES),
         create_bootstrap.get_code(PREFIX_SCRIPT, create_bootstrap.INSTALL_PIP_MARK),
     ])
 

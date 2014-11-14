@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 """
-    WARNING: This file is generated with: 'create_bootstrap.py'
+    WARNING: This file is generated with: bootstrap_env v0.3.4
+    https://pypi.python.org/pypi/bootstrap_env/
+    script file: 'create_bootstrap.py'
     used '/home/jens/dwload_server_env/lib/python3.4/site-packages/virtualenv.py' v1.11.6
     Python v3.4.0 (default, Apr 11 2014, 13:05:18)  [GCC 4.8.2]
 """
@@ -1861,20 +1863,69 @@ DEVELOPER_INSTALLATION = ['pyserial',
  '--editable=git+git@github.com:jedie/bootstrap_env.git#egg=bootstrap_env',
  '--editable=git+git@github.com:DWLOAD/DwLoadServer.git#egg=dwload_server']
 ###############################################################################
-## '/home/jens/workspace/DwLoadServer/bootstrap/source_prefix_code.py' START
+## '/home/jens/workspace/dwload-server/bootstrap/source_prefix_code.py' START
 # For choosing the installation type:
 INST_PYPI="pypi"
 INST_GIT="git_readonly"
 INST_DEV="dev"
 
 INST_TYPES=(INST_PYPI, INST_GIT, INST_DEV)
-## '/home/jens/workspace/DwLoadServer/bootstrap/source_prefix_code.py' END
+## '/home/jens/workspace/dwload-server/bootstrap/source_prefix_code.py' END
 ###############################################################################
 ## 'prefix code' END
 ###############################################################################
 ###############################################################################
 ## '/home/jens/workspace/bootstrap_env/bootstrap_env/bootstrap_install_pip.py' START
 INSTALL_PIP_OPTION="--install-pip"
+
+
+class EnvSubprocess(object):
+    """
+    Use to install pip and useful also to install other packages in after_install.
+    """
+    def __init__(self, home_dir):
+        self.abs_home_dir = os.path.abspath(home_dir)
+
+        if sys.platform in ['win32','cygwin','win64']:
+            self.bin_dir = os.path.join(self.abs_home_dir, "Scripts")
+        else:
+            self.bin_dir = os.path.join(self.abs_home_dir, "bin")
+
+        self.python_cmd = os.path.join(self.bin_dir, "python")
+        self.pip_cmd = os.path.join(self.bin_dir, "pip")
+
+        self.subprocess_defaults = {
+            "cwd": self.bin_dir,
+            "env": {
+                "VIRTUAL_ENV": self.abs_home_dir,
+                "PATH": self.bin_dir + os.pathsep + os.environ["PATH"],
+            }
+        }
+        try:
+            # Work-a-round for http://bugs.python.org/issue20614 :
+            #       Python3 will crash under windows without SYSTEMROOT
+            self.subprocess_defaults["env"]["SYSTEMROOT"] = os.environ['SYSTEMROOT']
+        except KeyError:
+            pass
+
+    def _subprocess(self, cmd):
+        print("call %r" % " ".join(cmd))
+        subprocess.call(cmd, **self.subprocess_defaults)
+
+    def call_env_python(self, cmd):
+        self._subprocess([self.python_cmd] + cmd)
+
+    def call_env_pip(self, cmd):
+        self._subprocess([self.pip_cmd] + cmd)
+
+
+def _install_pip(options, home_dir):
+    print("Install pip...")
+    bootstrap_file = os.path.abspath(sys.argv[0])
+    assert os.path.isfile(bootstrap_file), "Path to self not found?!?! (%r not exists?!?!)" % bootstrap_file
+
+    env_subprocess = EnvSubprocess(home_dir)
+    env_subprocess.call_env_python([bootstrap_file, "--install-pip", env_subprocess.abs_home_dir])
 
 
 def extend_parser(parser):
@@ -1922,30 +1973,15 @@ def adjust_options(options, args):
 
 
 def after_install(options, home_dir):
-    install_pip(options, home_dir)
-
-
+    _install_pip(options, home_dir)
+## '/home/jens/workspace/bootstrap_env/bootstrap_env/bootstrap_install_pip.py' END
+###############################################################################
     ###############################################################################
     ## 'source_after_install.py' START
     """
     called after virtualenv was created and pip/setuptools installed.
     Now we installed requirement libs/packages.
     """
-
-    abs_home_dir = os.path.abspath(home_dir)
-    logfile = os.path.join(abs_home_dir, "install.log")
-    bin_dir = os.path.join(abs_home_dir, "bin")
-    python_cmd = os.path.join(bin_dir, "python")
-    pip_cmd = os.path.join(bin_dir, "pip")
-    
-    subprocess_defaults = {
-        "cwd": bin_dir,
-        "env": {
-            "VIRTUAL_ENV": home_dir,
-            "PATH": bin_dir + ":" + os.environ["PATH"],
-        }
-    }
-
     if options.install_type==INST_PYPI:
         requirements=NORMAL_INSTALLATION
     elif options.install_type==INST_GIT:
@@ -1953,36 +1989,21 @@ def after_install(options, home_dir):
     elif options.install_type==INST_DEV:
         requirements=DEVELOPER_INSTALLATION
     else:
-        raise RuntimeError("Install type %r unknown?!?" % options.install_type) # Should never happen
+        # Should never happen
+        raise RuntimeError("Install type %r unknown?!?" % options.install_type)
+
+    env_subprocess = EnvSubprocess(home_dir) # from bootstrap_env.bootstrap_install_pip
+
+    logfile = os.path.join(env_subprocess.abs_home_dir, "install.log")
 
     for requirement in requirements:
-        cmd = [pip_cmd, "install", "--log=%s" % logfile, requirement]
-        sys.stdout.write("\n+ %s\n" % " ".join(cmd))
-        subprocess.call(cmd, **subprocess_defaults)
+        sys.stdout.write("\n\nInstall %r:\n" % requirement)
+        env_subprocess.call_env_pip(["install", "--log=%s" % logfile, requirement])
         sys.stdout.write("\n")
     ## 'source_after_install.py' END
     ###############################################################################
 
 
-def install_pip(options, home_dir):
-    abs_home_dir = os.path.abspath(home_dir)
-    bin_dir = os.path.join(abs_home_dir, "bin")
-    python_cmd = os.path.join(bin_dir, "python")
-
-    bootstrap_file = os.path.abspath(sys.argv[0])
-    assert os.path.isfile(bootstrap_file), "Path to self not found?!?! (%r not exists?!?!)" % bootstrap_file
-
-    cmd=[python_cmd, bootstrap_file, "--install-pip", abs_home_dir]
-    print("call to install pip with: %r" % " ".join(cmd))
-    subprocess.call(cmd,
-        cwd=bin_dir,
-        env={
-            "VIRTUAL_ENV": home_dir,
-            "PATH": bin_dir + ":" + os.environ["PATH"],
-        }
-    )
-## '/home/jens/workspace/bootstrap_env/bootstrap_env/bootstrap_install_pip.py' END
-###############################################################################
 
 
 ###############################################################################

@@ -8,6 +8,8 @@ from bootstrap.source_prefix_code import (
     INST_PYPI, INST_GIT, INST_DEV,
     NORMAL_INSTALLATION,GIT_READONLY_INSTALLATION,DEVELOPER_INSTALLATION
 )
+from bootstrap_env.bootstrap_install_pip import EnvSubprocess
+
 
 def after_install(options, home_dir):
     # --- CUT here ---
@@ -15,21 +17,6 @@ def after_install(options, home_dir):
     called after virtualenv was created and pip/setuptools installed.
     Now we installed requirement libs/packages.
     """
-
-    abs_home_dir = os.path.abspath(home_dir)
-    logfile = os.path.join(abs_home_dir, "install.log")
-    bin_dir = os.path.join(abs_home_dir, "bin")
-    python_cmd = os.path.join(bin_dir, "python")
-    pip_cmd = os.path.join(bin_dir, "pip")
-    
-    subprocess_defaults = {
-        "cwd": bin_dir,
-        "env": {
-            "VIRTUAL_ENV": home_dir,
-            "PATH": bin_dir + ":" + os.environ["PATH"],
-        }
-    }
-
     if options.install_type==INST_PYPI:
         requirements=NORMAL_INSTALLATION
     elif options.install_type==INST_GIT:
@@ -37,10 +24,14 @@ def after_install(options, home_dir):
     elif options.install_type==INST_DEV:
         requirements=DEVELOPER_INSTALLATION
     else:
-        raise RuntimeError("Install type %r unknown?!?" % options.install_type) # Should never happen
+        # Should never happen
+        raise RuntimeError("Install type %r unknown?!?" % options.install_type)
+
+    env_subprocess = EnvSubprocess(home_dir) # from bootstrap_env.bootstrap_install_pip
+
+    logfile = os.path.join(env_subprocess.abs_home_dir, "install.log")
 
     for requirement in requirements:
-        cmd = [pip_cmd, "install", "--log=%s" % logfile, requirement]
-        sys.stdout.write("\n+ %s\n" % " ".join(cmd))
-        subprocess.call(cmd, **subprocess_defaults)
+        sys.stdout.write("\n\nInstall %r:\n" % requirement)
+        env_subprocess.call_env_pip(["install", "--log=%s" % logfile, requirement])
         sys.stdout.write("\n")

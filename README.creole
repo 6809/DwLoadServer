@@ -31,6 +31,8 @@ Implemented DriveWire Transactions:
 
 == installation
 
+=== Linux
+
 The is a virtualenv bootstrap file, created with [[https://github.com/jedie/bootstrap_env|bootstrap_env]], for easy installation.
 
 Get the bootstrap file:
@@ -57,6 +59,20 @@ So you can easy update them e.g.:
 /home/FooBar$ cd ~/dwload_server_env/src/dwload-server
 /home/FooBar/dwload_server_env/src/dwload-server$ git pull
 }}}
+
+=== Windows
+
+There are several ways to install the project under windows.
+
+The following is hopeful the easiest one:
+
+* Install Python 3, e.g.: https://www.python.org/downloads/
+* Download the {{{DWLOAD Server}}} git snapshot from Github: [[https://github.com/DWLOAD/DwLoadServer/archive/master.zip|master.zip]]
+* Extract the Archive somewhere
+* Maybe, adjust paths in {{{boot_dwload_server.cmd}}}
+* Run {{{boot_dwload_server.cmd}}}
+
+The default {{{boot_dwload_server.cmd}}} will install via {{{Python Package Index}}} (PyPi) into {{{%APPDATA%\dwload_server_env}}}
 
 
 === startup
@@ -98,18 +114,24 @@ Maybe it's nice to have a shell script to startup? Take a copy of existing [[htt
 
 == History
 
-* 12.11.2014 - send a file works rudimentary
+* 14.11.2014 - v0.1.0 - Create bootstrap file that work under linux and windows.
+* 12.11.2014 - v0.0.1 - send a file works rudimentary
 * 30.09.2014 - Idea was born: [[http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946#p11893|Forum post 11893]]
 
 
 == Links
 
-* Forum Thread: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946
+| Forum Thread        | [[http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946]]
+| IRC                 | [[http://www.pylucid.org/permalink/304/irc-channel|#pylucid on freenode.net]]
+| Jabber              | pylucid@conference.jabber.org
+| PyPi                | [[https://pypi.python.org/pypi/dwload_server/]]
+| Github              | [[https://github.com/DWLOAD/DwLoadServer]]
+
+some project related links:
+
 * About DWLOAD: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964
 * DWEEBS application Thread: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968
 * Dragon 32/64 DriveWire Adapter: http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter
 * Drivewire for dummies: http://archive.worldofdragon.org/index.php?title=Drivewire_for_dummies
 * http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/
 * http://sourceforge.net/p/drivewireserver/wiki/
-
-Repository on github: https://github.com/DWLOAD/DwLoadServer
