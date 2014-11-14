@@ -47,9 +47,16 @@ There are tree types of installation:
 
 e.g.:
 {{{
-/home/FooBar$ python3 boot_dwload_server.py ~/dwload_server_env --install_type pypi
+/home/FooBar$ python3 boot_dwload_server.py ~/dwload_server_env --install_type git_readonly
 }}}
-This creates a virtualenv in **{{{~/dwload_server_env}}}** and used the packages from the **Python Package Index**.
+This creates a virtualenv in **{{{~/dwload_server_env}}}** and used {{{git}}} to checkout the needed repositories.
+
+In this case (using --install_type=**git_readonly**) the git repository are in: **.../dwload_server_env/src/**
+So you can easy update them e.g.:
+{{{
+/home/FooBar$ cd ~/dwload_server_env/src/dwload-server
+/home/FooBar/dwload_server_env/src/dwload-server$ git pull
+}}}
 
 
 === startup
