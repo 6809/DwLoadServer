@@ -30,14 +30,31 @@ e.g.:
 {{{
 /home/FooBar$ python3 boot_dwload_server.py ~/dwload_server_env --install_type pypi
 }}}
-This creates a virtualenv in **~/dwload_server_env** and used the packages from the **Python Package Index**.
+This creates a virtualenv in **{{{~/dwload_server_env}}}** and used the packages from the **Python Package Index**.
+
+=== startup
+
+Setup server root directory. This is the directory for the files that are interchange with the client.
+{{{
+/home/FooBar$ cd ~/dwload_server_env/
+/home/FooBar/dwload_server_env$ mkdir root
+}}}
+You have to put the DWEEB files into the {{{root}}} dir. e.g. {{{dwload-demo-files}}} from: https://github.com/DWLOAD/DWLOAD
+
+To start the server:
+{{{
+/home/FooBar$ cd ~/dwload_server_env/
+/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root
+}}}
+
+Display CLI help:
+{{{
+/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --help
+}}}
 
 == TODO
 
-**TODO:** External {{{dragonlib}}} dependency is needed: https://github.com/6809/dragonlib
-
 * compare checksum
-* add a CLI
 * maybe use a config.ini file?!?
 
 
