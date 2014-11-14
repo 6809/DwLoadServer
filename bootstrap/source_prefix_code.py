@@ -8,8 +8,9 @@ import subprocess
 
 
 # Will be inserted in real bootstrap file ;)
-DEVELOPER_INSTALLATION=None
-NORMAL_INSTALLATION=None
+NORMAL_INSTALLATION = None # requirements from normal_installation.txt
+GIT_READONLY_INSTALLATION = None # requirements from git_readonly_installation.txt
+DEVELOPER_INSTALLATION = None # requirements from developer_installation.txt
 
 
 # --- CUT here ---

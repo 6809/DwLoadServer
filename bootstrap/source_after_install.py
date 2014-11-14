@@ -4,7 +4,10 @@
 import sys
 import subprocess
 import os
-
+from bootstrap.source_prefix_code import (
+    INST_PYPI, INST_GIT, INST_DEV,
+    NORMAL_INSTALLATION,GIT_READONLY_INSTALLATION,DEVELOPER_INSTALLATION
+)
 
 def after_install(options, home_dir):
     # --- CUT here ---
@@ -12,9 +15,6 @@ def after_install(options, home_dir):
     called after virtualenv was created and pip/setuptools installed.
     Now we installed requirement libs/packages.
     """
-
-    raise NotImplementedError("TODO!!!") # TODO
-
 
     abs_home_dir = os.path.abspath(home_dir)
     logfile = os.path.join(abs_home_dir, "install.log")
@@ -30,5 +30,17 @@ def after_install(options, home_dir):
         }
     }
 
-    cmd = [self.pip_cmd, "install", "--log=%s" % self.logfile, pip_line]
-    subprocess.call(cmd, **self.subprocess_defaults)
+    if options.install_type==INST_PYPI:
+        requirements=NORMAL_INSTALLATION
+    elif options.install_type==INST_GIT:
+        requirements=GIT_READONLY_INSTALLATION
+    elif options.install_type==INST_DEV:
+        requirements=DEVELOPER_INSTALLATION
+    else:
+        raise RuntimeError("Install type %r unknown?!?" % options.install_type) # Should never happen
+
+    for requirement in requirements:
+        cmd = [pip_cmd, "install", "--log=%s" % logfile, requirement]
+        sys.stdout.write("\n+ %s\n" % " ".join(cmd))
+        subprocess.call(cmd, **subprocess_defaults)
+        sys.stdout.write("\n")

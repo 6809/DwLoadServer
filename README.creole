@@ -10,6 +10,27 @@ It's in unuseable, experimental state and currently nothing more then some tests
 
 Currently the server can only send files to the DWLOAD client.
 
+== installation
+
+The is a virtualenv bootstrap file, created with [[https://github.com/jedie/bootstrap_env|bootstrap_env]], for easy installation.
+
+Get the bootstrap file:
+{{{
+/home/FooBar$ wget https://raw.githubusercontent.com/DWLOAD/DwLoadServer/master/boot_dwload_server.py
+}}}
+
+
+There are tree types of installation:
+|=option           |= desciption
+| **pypi**         | use [[http://www.python.org/pypi/|Python Package Index]] (for all normal user!)
+| **git_readonly** | use {{{git}}} to get the sourcecode (for developer without write access)
+| **dev**          | use {{{git}}} with write access
+
+e.g.:
+{{{
+/home/FooBar$ python3 boot_dwload_server.py ~/dwload_server_env --install_type pypi
+}}}
+This creates a virtualenv in **~/dwload_server_env** and used the packages from the **Python Package Index**.
 
 == TODO
 

@@ -12,3 +12,5 @@ def adjust_options(options, args):
         sys.stderr.write("\n\nERROR:\nYou must add --install_type option (See README) !\n")
         sys.stderr.write("Available types: %s\n\n" % ", ".join(INST_TYPES))
         sys.exit(-1)
+
+    sys.stdout.write("\nInstall type: %r\n" % options.install_type)
