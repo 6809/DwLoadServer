@@ -2,7 +2,7 @@
 
 (
     set -x
-    python3 ./dwload_server/dwload_server.py
+    python3 -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root
 )
 echo
 read -n1 -p "Start bash? [y,n]" doit
