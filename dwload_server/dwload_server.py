@@ -82,7 +82,14 @@ class DwLoadServer(object):
     def connect(self, port):
         self.ser.port = port
         self.ser.baudrate = 57600
-        self.ser.open()
+        try:
+            self.ser.open()
+        except serial.serialutil.SerialException as err:
+            sys.stderr.write("\nERROR: Can't open serial %r !\n" % port)
+            sys.stderr.write("\nRight Port? Port not in use? User rights ok?\n")
+            sys.stderr.write("Look at http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter for help!\n")
+            sys.stderr.write("\n(Origin error is: %s)\n\n" % err)
+            sys.exit(-1)
         print_settings(self.ser)
 
     def read_byte(self):
