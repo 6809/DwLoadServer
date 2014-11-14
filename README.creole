@@ -74,8 +74,13 @@ The following is hopeful the easiest one:
 
 The default {{{boot_dwload_server.cmd}}} will install via {{{Python Package Index}}} (PyPi) into {{{%APPDATA%\dwload_server_env}}}
 
+There exist a batch file for easy startup the server under Windows:
+* [[https://github.com/DWLOAD/DwLoadServer/blob/master/scripts/start_dwload_server.cmd|/scripts/start_dwload_server.cmd]]
 
-=== startup
+Copy it into {{{%APPDATA%\dwload_server_env\start_dwload_server.cmd}}} and edit it for your needs.
+
+
+=== startup linux
 
 Setup server root directory. This is the directory for the files that are interchange with the client.
 {{{
