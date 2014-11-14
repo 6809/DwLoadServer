@@ -18,3 +18,7 @@ docutils
 # https://github.com/jedie/bootstrap_env
 # https://pypi.python.org/pypi/bootstrap_env/
 -e git+https://github.com/jedie/bootstrap_env.git#egg=bootstrap_env
+
+# https://github.com/DWLOAD/DwLoadServer
+# https://pypi.python.org/pypi/dwload_server
+-e git+https://github.com/DWLOAD/DwLoadServer.git#egg=dwload_server

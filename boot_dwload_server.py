@@ -1843,19 +1843,21 @@ def create_bootstrap_script(extra_text, python_version=''):
 ###############################################################################
 ## 'prefix code' START
 # requirements from normal_installation.txt
-NORMAL_INSTALLATION = ['pyserial', 'dragonlib']
+NORMAL_INSTALLATION = ['pyserial', 'dragonlib', 'dwload-server']
 
 # requirements from git_readonly_installation.txt
 GIT_READONLY_INSTALLATION = ['pyserial',
  'docutils',
  'git+https://github.com/6809/dragonlib.git#egg=dragonlib',
- 'git+https://github.com/jedie/bootstrap_env.git#egg=bootstrap_env']
+ 'git+https://github.com/jedie/bootstrap_env.git#egg=bootstrap_env',
+ 'git+https://github.com/DWLOAD/DwLoadServer.git#egg=dwload_server']
 
 # requirements from developer_installation.txt
 DEVELOPER_INSTALLATION = ['pyserial',
  'docutils',
  'git+git@github.com:6809/dragonlib.git#egg=dragonlib',
- 'git+git@github.com:jedie/bootstrap_env.git#egg=bootstrap_env']
+ 'git+git@github.com:jedie/bootstrap_env.git#egg=bootstrap_env',
+ 'git+git@github.com:DWLOAD/DwLoadServer.git#egg=dwload_server']
 ###############################################################################
 ## '/home/jens/workspace/DwLoadServer/bootstrap/source_prefix_code.py' START
 # For choosing the installation type:
