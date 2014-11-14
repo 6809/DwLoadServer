@@ -253,7 +253,8 @@ class DwLoadServer(object):
             req_type = self.ser.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
-                if req_type == 0x01:
+                if req_type == 0x01: # dez.: 1 - ransaction OP_NAMEOBJ_MOUNT
+                    # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
                     log.debug(" *** handle filename: ***")
                     self.handle_filename()
 
