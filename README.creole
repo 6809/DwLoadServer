@@ -37,7 +37,7 @@ The is a virtualenv bootstrap file, created with [[https://github.com/jedie/boot
 
 Get the bootstrap file:
 {{{
-/home/FooBar$ wget https://raw.githubusercontent.com/DWLOAD/DwLoadServer/master/boot_dwload_server.py
+/home/FooBar$ wget https://raw.githubusercontent.com/6809/DwLoadServer/master/boot_dwload_server.py
 }}}
 
 
@@ -67,7 +67,7 @@ There are several ways to install the project under windows.
 The following is hopeful the easiest one:
 
 * Install Python 3, e.g.: https://www.python.org/downloads/
-* Download the {{{DWLOAD Server}}} git snapshot from Github: [[https://github.com/DWLOAD/DwLoadServer/archive/master.zip|master.zip]]
+* Download the {{{DWLOAD Server}}} git snapshot from Github: [[https://github.com/6809/DwLoadServer/archive/master.zip|master.zip]]
 * Extract the Archive somewhere
 * Maybe, adjust paths in {{{boot_dwload_server.cmd}}}
 * Run {{{boot_dwload_server.cmd}}}
@@ -75,7 +75,7 @@ The following is hopeful the easiest one:
 The default {{{boot_dwload_server.cmd}}} will install via {{{Python Package Index}}} (PyPi) into {{{%APPDATA%\dwload_server_env}}}
 
 There exist a batch file for easy startup the server under Windows:
-* [[https://github.com/DWLOAD/DwLoadServer/blob/master/scripts/start_dwload_server.cmd|/scripts/start_dwload_server.cmd]]
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_dwload_server.cmd|/scripts/start_dwload_server.cmd]]
 
 Copy it into {{{%APPDATA%\dwload_server_env\start_dwload_server.cmd}}} and edit it for your needs.
 
@@ -106,10 +106,10 @@ Display CLI help:
 }}}
 
 
-Maybe it's nice to have a shell script to startup? Take a copy of existing [[https://github.com/DWLOAD/DwLoadServer/blob/master/start_DWLOAD_server.sh|start_DWLOAD_server.sh]] file and change it for your needs, e.g.:
+Maybe it's nice to have a shell script to startup? Take a copy of existing [[https://github.com/6809/DwLoadServer/blob/master/start_DWLOAD_server.sh|start_DWLOAD_server.sh]] file and change it for your needs, e.g.:
 {{{
 /home/FooBar$ cd ~/dwload_server_env/
-/home/FooBar/dwload_server_env$ wget https://raw.githubusercontent.com/DWLOAD/DwLoadServer/master/start_DWLOAD_server.sh
+/home/FooBar/dwload_server_env$ wget https://raw.githubusercontent.com/6809/DwLoadServer/master/start_DWLOAD_server.sh
 
 # Just call (after edit)
 /home/FooBar/dwload_server_env$ ./start_DWLOAD_server.sh
@@ -130,7 +130,7 @@ Maybe it's nice to have a shell script to startup? Take a copy of existing [[htt
 | IRC                 | [[http://www.pylucid.org/permalink/304/irc-channel|#pylucid on freenode.net]]
 | Jabber              | pylucid@conference.jabber.org
 | PyPi                | [[https://pypi.python.org/pypi/dwload_server/]]
-| Github              | [[https://github.com/DWLOAD/DwLoadServer]]
+| Github              | [[https://github.com/6809/DwLoadServer]]
 
 some project related links:
 
