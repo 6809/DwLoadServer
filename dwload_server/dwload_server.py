@@ -67,6 +67,17 @@ class DwNotReadyError(DwException):
 
 
 
+def drivewire_checksum(data):
+    """
+    http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#appendix-b-drivewire-checksum-algorithm
+    """
+    checksum = 0
+    for b in data:
+        checksum += b
+    return checksum
+
+
+
 
 def print_settings(ser):
     print("Settings for serial %r:" % ser.name)
@@ -141,7 +152,7 @@ class DwLoadServer(object):
         self.drive_number -= 1
         self.file_info[self.drive_number] = filename
 
-        log.info("Filename %r attached to drive number: %i", byte_count, self.drive_number)
+        log.info("Filename %r attached to drive number: %i", filename, self.drive_number)
         self.interface.write_byte(self.drive_number)
 
     def get_filepath_lsn(self):
@@ -183,6 +194,11 @@ class DwLoadServer(object):
 
         self.interface.write(chunk)
 
+        checksum = drivewire_checksum(chunk)
+        log.info("Calculated checksum: $%x dez: %i", checksum, checksum)
+        bytes = word2bytes(checksum)
+        log.critical(repr(bytes))
+
         try:
             client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
         except:
@@ -213,6 +229,9 @@ class DwLoadServer(object):
             raise DwWriteError(err)
 
         log.debug("Filesize now: %i", filesize)
+
+        checksum = drivewire_checksum(chunk)
+        log.info("Calucated checksum: $%x dez: %i", checksum, checksum)
 
         client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
         log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
