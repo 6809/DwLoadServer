@@ -87,37 +87,7 @@ def print_bytes(bytes):
         sys.stdout.flush()
 
 
-class BaseInterface(object):
-    """
-    Small layer to add some useful read/write methods.
-    """
-    def read_byte(self):
-        raw_byte = self.read(1)
-        return struct.unpack("B", raw_byte)[0]
-
-    def read_bytes(self, size):
-        raw_byte = self.read(size)
-        return struct.unpack("B" * size, raw_byte)
-
-    def read_integer(self, size):
-        raw_byte = self.read(size)
-        integers = struct.unpack(">" + "B" * size, raw_byte)
-        result = sum(integers)
-        log.debug("read %i Bit integer: %s = %i", size * 8, repr(integers), result)
-        return result
-
-    def write_byte(self, value):
-        raw_byte = struct.pack("B", value)
-        self.write(raw_byte)
-
-    def read_block(self):
-        byte_count = self.read_byte()
-        log.debug("Read block with a length of %i", byte_count)
-        content = self.read(byte_count)
-        return byte_count, content
-
-
-class SerialInterface(BaseInterface):
+class SerialInterface(object):
     def __init__(self):
         self.conn = serial.Serial()
             
@@ -148,40 +118,6 @@ class SerialInterface(BaseInterface):
             log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
         log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
         self.conn.write(data)
-
-
-
-class BeckerInterface(BaseInterface):
-    def __init__(self, ip="127.0.0.1", port=65504):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
-    def listen(self, ip="127.0.0.1", port=65504):
-        self.sock.bind((ip, port))
-
-        # Listen for incoming connections
-        self.sock.listen(1)
-
-        log.critical("Waiting for a connection on %s:%s ...", ip, port)
-        self.conn, client_address = self.sock.accept()
-        log.critical("Incoming connection from %r", client_address)
-                
-    def read(self, size=1):
-        log.debug("READ %i:", size)
-        data = self.conn.recv(size)
-        if len(data)!=size:
-            log.error("Receive %i Bytes, but %i are expected!", len(data), size)
-
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        return data
-
-    def write(self, data):
-        log.debug("WRITE %i:", len(data))
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        self.conn.sendall(data)
 
 
 
@@ -319,6 +255,75 @@ class DwLoadServer(object):
                 self.interface.write_byte(err.ERROR_CODE)
 
 
+class BaseServer(object):
+    def read_byte(self):
+        raw_byte = self.read(1)
+        return struct.unpack("B", raw_byte)[0]
+
+    def read_bytes(self, size):
+        raw_byte = self.read(size)
+        return struct.unpack("B" * size, raw_byte)
+
+    def read_integer(self, size):
+        raw_byte = self.read(size)
+        integers = struct.unpack(">" + "B" * size, raw_byte)
+        result = sum(integers)
+        log.debug("read %i Bit integer: %s = %i", size * 8, repr(integers), result)
+        return result
+
+    def write_byte(self, value):
+        raw_byte = struct.pack("B", value)
+        self.write(raw_byte)
+
+    def read_block(self):
+        byte_count = self.read_byte()
+        log.debug("Read block with a length of %i", byte_count)
+        content = self.read(byte_count)
+        return byte_count, content
+
+
+class BeckerServer(BaseServer):
+    def __init__(self, ip="127.0.0.1", port=65504, *args, **kwargs):
+        self.ip=ip
+        self.port=port
+
+        self.dwload_server = DwLoadServer(self, *args, **kwargs)
+
+        log.critical("Listen for incoming connections on %s:%s ...", self.ip, self.port)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.bind((ip, port))
+        self.sock.listen(1)
+
+    def serve_forever(self):
+        while True:
+            log.critical("Waiting for a connection on %s:%s ...", self.ip, self.port)
+            self.conn, client_address = self.sock.accept()
+            log.critical("Incoming connection from %r", client_address)
+
+            try:
+                self.dwload_server.serve_forever()
+            except ConnectionError as err:
+                log.error("ERROR: %s", err)
+
+    def read(self, size=1):
+        log.debug("READ %i:", size)
+        data = self.conn.recv(size)
+        if len(data)!=size:
+            log.error("Receive %i Bytes, but %i are expected!", len(data), size)
+
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        return data
+
+    def write(self, data):
+        log.debug("WRITE %i:", len(data))
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        self.conn.sendall(data)
+
+
 def start_server(root_dir, port, log_level=logging.INFO):
     setup_logging(level=log_level)
 
@@ -365,10 +370,10 @@ if __name__ == '__main__':
     log_level=logging.DEBUG
     setup_logging(level=log_level)
 
-    interface=BeckerInterface()
-    interface.listen()
-
-    dwload = DwLoadServer(interface, root_dir=root_dir, log_level=log_level)
-    dwload.serve_forever()
+    dwload_server=BeckerServer(
+        ip="127.0.0.1", port=65504,
+        root_dir=root_dir, log_level=log_level
+    )
+    dwload_server.serve_forever()
 
     print(" --- END --- ")
