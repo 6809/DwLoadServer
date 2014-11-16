@@ -17,6 +17,8 @@ import socket
 import sys
 import struct
 import math
+from dragonlib.utils.byte_word_values import word2bytes
+import time
 
 
 try:
@@ -313,6 +315,9 @@ class BeckerServer(BaseServer):
         self.sock.bind((ip, port))
         self.sock.listen(1)
 
+        self.sock.settimeout(10)
+        log.debug("Socket timeout: %r", self.sock.gettimeout())
+
     def serve_forever(self):
         while True:
             log.critical("Waiting for a connection on %s:%s ...", self.ip, self.port)
@@ -324,9 +329,21 @@ class BeckerServer(BaseServer):
             except ConnectionError as err:
                 log.error("ERROR: %s", err)
 
+    def recv_all(self, size):
+        buf = []
+        while size>0:
+            data = self.conn.recv(size)
+            if data:
+                log.debug("\tReceive %i Bytes", len(data))
+            buf.append(data)
+            size -= len(data)
+            if size>0:
+                time.sleep(0.1)
+        return b''.join(buf)
+
     def read(self, size=1):
         log.debug("READ %i:", size)
-        data = self.conn.recv(size)
+        data = self.recv_all(size)
         if len(data)!=size:
             log.error("Receive %i Bytes, but %i are expected!", len(data), size)
 
