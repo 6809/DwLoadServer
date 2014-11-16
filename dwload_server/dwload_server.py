@@ -13,6 +13,7 @@ import argparse
 
 import os
 import logging
+import socket
 import sys
 import struct
 import math
@@ -31,6 +32,7 @@ except ImportError as err:
 from dragonlib.api import Dragon32API as Api
 from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
 
+LOG_DEZ=False
 
 log = logging.getLogger(__name__)
 
@@ -85,8 +87,7 @@ def print_bytes(bytes):
         sys.stdout.flush()
 
 
-
-class DwSerial(serial.Serial):
+class BaseInterface(object):
     """
     Small layer to add some useful read/write methods.
     """
@@ -100,7 +101,7 @@ class DwSerial(serial.Serial):
 
     def read_integer(self, size):
         raw_byte = self.read(size)
-        integers = struct.unpack("B" * size, raw_byte)
+        integers = struct.unpack(">" + "B" * size, raw_byte)
         result = sum(integers)
         log.debug("read %i Bit integer: %s = %i", size * 8, repr(integers), result)
         return result
@@ -116,46 +117,15 @@ class DwSerial(serial.Serial):
         return byte_count, content
 
 
-class DebugDwSerial(DwSerial):
-    """
-    Create log.debug() calls on every read/write to serial
-    """
-    def read(self, size=1):
-        log.debug("READ %i:", size)
-        data = super(DebugDwSerial, self).read(size)
-        log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        return data
-
-    def write(self, data):
-        log.debug("WRITE %i:", len(data))
-        log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        super(DebugDwSerial, self).write(data)
-
-
-class DwLoadServer(object):
-    """
-    The DWLOAD server
-    """
-    def __init__(self, root_dir, log_level):
-        self.root_dir = os.path.normpath(root_dir)
-        log.info("Root directory is: %r", self.root_dir)
-        self.log_level=log_level
-
-        if self.log_level<=10:
-            self.ser = DebugDwSerial()
-        else:
-            self.ser = DwSerial()
-
-        self.drive_number = 256
-        self.file_info = {}
-
+class SerialInterface(BaseInterface):
+    def __init__(self):
+        self.conn = serial.Serial()
+            
     def connect(self, port):
-        self.ser.port = port
-        self.ser.baudrate = 57600
+        self.conn.port = port
+        self.conn.baudrate = 57600
         try:
-            self.ser.open()
+            self.conn.open()
         except serial.serialutil.SerialException as err:
             sys.stderr.write("\nERROR: Can't open serial %r !\n" % port)
             sys.stderr.write("\nRight Port? Port not in use? User rights ok?\n")
@@ -164,18 +134,82 @@ class DwLoadServer(object):
             sys.exit(-1)
         print_settings(self.ser)
 
+    def read(self, size=1):
+        log.debug("READ %i:", size)
+        data = self.conn.read(size)
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        return data
+
+    def write(self, data):
+        log.debug("WRITE %i:", len(data))
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        self.conn.write(data)
+
+
+
+class BeckerInterface(BaseInterface):
+    def __init__(self, ip="127.0.0.1", port=65504):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    def listen(self, ip="127.0.0.1", port=65504):
+        self.sock.bind((ip, port))
+
+        # Listen for incoming connections
+        self.sock.listen(1)
+
+        log.critical("Waiting for a connection on %s:%s ...", ip, port)
+        self.conn, client_address = self.sock.accept()
+        log.critical("Incoming connection from %r", client_address)
+                
+    def read(self, size=1):
+        log.debug("READ %i:", size)
+        data = self.conn.recv(size)
+        if len(data)!=size:
+            log.error("Receive %i Bytes, but %i are expected!", len(data), size)
+
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        return data
+
+    def write(self, data):
+        log.debug("WRITE %i:", len(data))
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        self.conn.sendall(data)
+
+
+
+class DwLoadServer(object):
+    """
+    The DWLOAD server
+    """
+    def __init__(self, interface, root_dir, log_level):
+        self.interface = interface
+        self.root_dir = os.path.normpath(root_dir)
+        log.info("Root directory is: %r", self.root_dir)
+        self.log_level=log_level
+
+        self.drive_number = 256
+        self.file_info = {}
+
     def handle_filename(self):
-        byte_count, content = self.ser.read_block()
+        byte_count, content = self.interface.read_block()
         filename = "".join([chr(i) for i in content])
 
         self.drive_number -= 1
         self.file_info[self.drive_number] = filename
 
         log.info("Filename %r attached to drive number: %i", byte_count, self.drive_number)
-        self.ser.write_byte(self.drive_number)
+        self.interface.write_byte(self.drive_number)
 
     def get_filepath_lsn(self):
-        drive_number = self.ser.read_byte()
+        drive_number = self.interface.read_byte()
         log.debug("Drive Number: $%02x (dez.: %i)", drive_number, drive_number)
 
         try:
@@ -188,7 +222,7 @@ class DwLoadServer(object):
         filepath = os.path.join(self.root_dir, filename)
         log.debug("Filename %r path: %r", filename, filepath)
 
-        lsn = self.ser.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
+        lsn = self.interface.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
         log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
 
         return filepath, lsn
@@ -211,12 +245,16 @@ class DwLoadServer(object):
         except OSError as err:
             raise DwReadError(err)
 
-        self.ser.write(chunk)
+        self.interface.write(chunk)
 
-        client_checksum = self.ser.read_integer(size=2) # 16bit checksum calculated by Dragon
-        log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
+        try:
+            client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
+        except:
+            pass
+        else:
+            log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-        self.ser.write_byte(0x00) # confirm checksum
+        self.interface.write_byte(0x00) # confirm checksum
 
         log.debug(" *** block send.")
 
@@ -225,7 +263,7 @@ class DwLoadServer(object):
         filepath, lsn = self.get_filepath_lsn()
 
         log.info("Save chunk to: %r", filepath)
-        chunk = self.ser.read(size=256)
+        chunk = self.interface.read(size=256)
         try:
             with open(filepath, "ab") as f:
                 pos = 256 * lsn
@@ -240,17 +278,17 @@ class DwLoadServer(object):
 
         log.debug("Filesize now: %i", filesize)
 
-        client_checksum = self.ser.read_integer(size=2) # 16bit checksum calculated by Dragon
+        client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
         log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-        self.ser.write_byte(0x00) # confirm checksum
+        self.interface.write_byte(0x00) # confirm checksum
 
         log.debug(" *** block written in file.")
 
     def serve_forever(self):
         log.debug("Serve forever")
         while True:
-            req_type = self.ser.read_byte()
+            req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
                 if req_type == 0x01: # dez.: 1 - ransaction OP_NAMEOBJ_MOUNT
@@ -269,13 +307,16 @@ class DwLoadServer(object):
                     self.write_transaction()
 
                 else:
-                    raise NotImplementedError("Request type $%02x (dez.: %i) is not supported, yet." % (
+                    msg="Request type $%02x (dez.: %i) is not supported, yet." % (
                         req_type, req_type
-                    ))
+                    )
+                    # raise NotImplementedError(msg)
+                    log.error(msg)
+                    self.interface.write_byte(0x00)
             except DwException as err:
                 log.error(err)
                 log.debug("Send DW error code $%02x back.", err.ERROR_CODE)
-                self.ser.write_byte(err.ERROR_CODE)
+                self.interface.write_byte(err.ERROR_CODE)
 
 
 def start_server(root_dir, port, log_level=logging.INFO):
@@ -288,6 +329,7 @@ def start_server(root_dir, port, log_level=logging.INFO):
 
 
 def cli():
+    # TODO: serial/becker
     parser = argparse.ArgumentParser(
         description="DWLOAD Server written in Python (GNU GPL v3+)"
         #epilog="foo"
@@ -317,6 +359,16 @@ def cli():
 
 
 if __name__ == '__main__':
-    cli()
+    # cli()
+
+    root_dir=os.path.expanduser("~/workspace/DWLOAD/dwload-demo-files")
+    log_level=logging.DEBUG
+    setup_logging(level=log_level)
+
+    interface=BeckerInterface()
+    interface.listen()
+
+    dwload = DwLoadServer(interface, root_dir=root_dir, log_level=log_level)
+    dwload.serve_forever()
 
     print(" --- END --- ")
