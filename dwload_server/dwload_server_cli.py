@@ -41,8 +41,8 @@ class DwLoadServerCLI(object):
         self.parser.epilog = textwrap.dedent(
             '''
             example usage:
-                {prog} serial --port=/dev/ttyUSB0 --root_dir=./dwload-files/
-                {prog} becker --root_dir=./dwload-files/
+                {prog} --root_dir=./dwload-files/ serial --port=/dev/ttyUSB0
+                {prog} --root_dir=./dwload-files/ becker
     
             Interface help:
                 {prog} serial --help

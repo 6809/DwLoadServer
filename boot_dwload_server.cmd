@@ -16,7 +16,7 @@ if NOT exist %boot_script% (
     exit 1
 )
 
-set destination=%APPDATA%\dwload_server_env
+set destination=%APPDATA%\DwLoadServer_env
 mkdir %destination%
 if NOT exist %destination% (
     echo ERROR: '%destination%' doesn't exists?!?

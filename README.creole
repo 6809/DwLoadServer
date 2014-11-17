@@ -49,15 +49,15 @@ There are tree types of installation:
 
 e.g.:
 {{{
-/home/FooBar$ python3 boot_dwload_server.py ~/dwload_server_env --install_type git_readonly
+/home/FooBar$ python3 boot_dwload_server.py ~/DwLoadServer_env --install_type git_readonly
 }}}
-This creates a virtualenv in **{{{~/dwload_server_env}}}** and used {{{git}}} to checkout the needed repositories.
+This creates a virtualenv in **{{{~/DwLoadServer_env}}}** and used {{{git}}} to checkout the needed repositories.
 
-In this case (using --install_type=**git_readonly**) the git repository are in: **.../dwload_server_env/src/**
+In this case (using --install_type=**git_readonly**) the git repository are in: **.../DwLoadServer_env/src/**
 So you can easy update them e.g.:
 {{{
-/home/FooBar$ cd ~/dwload_server_env/src/dwload-server
-/home/FooBar/dwload_server_env/src/dwload-server$ git pull
+/home/FooBar$ cd ~/DwLoadServer_env/src/dwload-server
+/home/FooBar/DwLoadServer_env/src/dwload-server$ git pull
 }}}
 
 === Windows
@@ -72,53 +72,128 @@ The following is hopeful the easiest one:
 * Maybe, adjust paths in {{{boot_dwload_server.cmd}}}
 * Run {{{boot_dwload_server.cmd}}}
 
-The default {{{boot_dwload_server.cmd}}} will install via {{{Python Package Index}}} (PyPi) into {{{%APPDATA%\dwload_server_env}}}
+The default {{{boot_dwload_server.cmd}}} will install via {{{Python Package Index}}} (PyPi) into {{{%APPDATA%\DwLoadServer_env}}}
 
-There exist a batch file for easy startup the server under Windows:
-* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_dwload_server.cmd|/scripts/start_dwload_server.cmd]]
+There are two batch files, for easy startup the server under Windows:
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_serial_DWLOAD_server.cmd|/scripts/start_serial_DWLOAD_server.cmd]]
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_becker_DWLOAD_server.cmd|/scripts/start_becker_DWLOAD_server.cmd]]
 
-Copy it into {{{%APPDATA%\dwload_server_env\start_dwload_server.cmd}}} and edit it for your needs.
+Copy these files into {{{%APPDATA%\DwLoadServer_env\}}} and edit it for your needs.
+Just double click to start the server.
+
+==== start by cli (windows)
+
+There is a batch file to open a commandline with a activated virtualenv:
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/cmd_here.cmd|/scripts/cmd_here.cmd]]
+
+copy this into  {{{%APPDATA%\DwLoadServer_env\}}} and double click it ;)
+
+by hand: Start **cmd.exe** and do this:
+{{{
+C:\Windows\system32>cd /d %APPDATA%\DwLoadServer_env\
+C:\Users\FOO\AppData\Roaming\DwLoadServer_env>call Scripts\activate.bat
+(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env>
+}}}
+
+So use the DWLOAD-Server CLI, e.g:
+{{{
+(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env> python.exe -m dwload_server.dwload_server_cli --root_dir=%APPDATA%\dwload-files\ --log_level=10 serial --port=COM3
+}}}
+
+Do see the CLI help page:
+{{{
+(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env> python.exe -m dwload_server.dwload_server_cli --help
+
+DWLOAD Server written in Python (GNU GPL v3+) v0.2.0
+
+usage: dwload_server_cli.py [-h] [--version] [--root_dir ROOT_DIR]
+                            [--log_level {0,10,20,30,30,40,50,99,100}]
+                            {becker,serial} ...
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --root_dir ROOT_DIR   Server root directory for load/store requested files
+  --log_level {0,10,20,30,30,40,50,99,100}
+                        Logging level: 10=DEBUG, 20=INFO, 30=WARNING,
+                        40=ERROR, 50=CRITICAL/FATAL
+
+Interface:
+  {becker,serial}
+    becker              Use the Becker interface
+    serial              Use the serial interface
+
+example usage:
+    dwload_server_cli.py --root_dir=./dwload-files/ serial --port=/dev/ttyUSB0
+    dwload_server_cli.py --root_dir=./dwload-files/ becker
+
+Interface help:
+    dwload_server_cli.py serial --help
+    dwload_server_cli.py becker --help
+}}}
+
 
 
 === startup linux
 
-Setup server root directory. This is the directory for the files that are interchange with the client.
-{{{
-/home/FooBar$ cd ~/dwload_server_env/
-/home/FooBar/dwload_server_env$ mkdir root
-}}}
-You have to put the DWEEB files into the {{{root}}} dir. e.g. {{{dwload-demo-files}}} from: https://github.com/DWLOAD/DWLOAD
+There are two shell scripts, for easy startup the server under Linux:
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_serial_DWLOAD_server.sh|/scripts/start_serial_DWLOAD_server.sh]]
+* [[https://github.com/6809/DwLoadServer/blob/master/scripts/start_becker_DWLOAD_server.sh|/scripts/start_becker_DWLOAD_server.sh]]
 
-To start the server:
-{{{
-/home/FooBar$ cd ~/dwload_server_env/
-/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root
-}}}
+Copy these files into {{{~/DwLoadServer_env/}}} and edit it for your needs.
 
-If you would like to see more debug output:
-{{{
-/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --port /dev/ttyUSB0 --root_dir ./root --log_level 10
-}}}
+The default DWLOAD-Server-root-directory is: {{{~/dwload-files/}}}
+e.g.: Download {{{dwload-demo-files.tar.xz.zip}}} from http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964
+and extract the files into {{{~/dwload-files/}}}
 
-Display CLI help:
+==== start by cli (linux)
+
+e.g.:
 {{{
-/home/FooBar/dwload_server_env$ ./bin/python -m dwload_server.dwload_server --help
+/home/FooBar $ cd ~/DwLoadServer_env/
+/home/FooBar/DwLoadServer_env/ $ source bin/activate
+(DwLoadServer_env) ~/DwLoadServer_env $ python3 -m dwload_server.dwload_server_cli --root_dir=~/dwload-files --log_level=10 serial --port=/dev/ttyUSB0
 }}}
 
-
-Maybe it's nice to have a shell script to startup? Take a copy of existing [[https://github.com/6809/DwLoadServer/blob/master/start_DWLOAD_server.sh|start_DWLOAD_server.sh]] file and change it for your needs, e.g.:
+Display CLI help, e.g:
 {{{
-/home/FooBar$ cd ~/dwload_server_env/
-/home/FooBar/dwload_server_env$ wget https://raw.githubusercontent.com/6809/DwLoadServer/master/start_DWLOAD_server.sh
+/home/FooBar $ cd ~/DwLoadServer_env/
+/home/FooBar/DwLoadServer_env/ $ source bin/activate
+(DwLoadServer_env) ~/DwLoadServer_env $ python3 -m dwload_server.dwload_server_cli --help
 
-# Just call (after edit)
-/home/FooBar/dwload_server_env$ ./start_DWLOAD_server.sh
+DWLOAD Server written in Python (GNU GPL v3+) v0.2.0
+
+usage: dwload_server_cli.py [-h] [--version] [--root_dir ROOT_DIR]
+                            [--log_level {0,10,20,30,30,40,50,99,100}]
+                            {becker,serial} ...
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+  --root_dir ROOT_DIR   Server root directory for load/store requested files
+  --log_level {0,10,20,30,30,40,50,99,100}
+                        Logging level: 10=DEBUG, 20=INFO, 30=WARNING,
+                        40=ERROR, 50=CRITICAL/FATAL
+
+Interface:
+  {becker,serial}
+    becker              Use the Becker interface
+    serial              Use the serial interface
+
+example usage:
+    dwload_server_cli.py --root_dir=./dwload-files/ serial --port=/dev/ttyUSB0
+    dwload_server_cli.py --root_dir=./dwload-files/ becker
+
+Interface help:
+    dwload_server_cli.py serial --help
+    dwload_server_cli.py becker --help
+
 }}}
-
 
 
 == History
 
+* 17.11.2014 - v0.2.0 - Support Becker and Serial interface.
 * 14.11.2014 - v0.1.0 - Create bootstrap file that work under linux and windows.
 * 12.11.2014 - v0.0.1 - send a file works rudimentary
 * 30.09.2014 - Idea was born: [[http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946#p11893|Forum post 11893]]
