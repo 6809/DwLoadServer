@@ -30,7 +30,7 @@ except ImportError as err:
 
 from dragonlib.utils.byte_word_values import word2bytes
 from dwload_server.exceptions import DwNotReadyError, DwReadError, DwWriteError, DwException
-from dwload_server.utils.hook import DW_HOOKS
+from dwload_server.utils.hook_handler import DW_HOOKS
 from dwload_server import constants
 
 log = logging.getLogger(__name__)
@@ -176,6 +176,9 @@ class DwLoadServer(object):
         while True:
             req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
+
+
+
             try:
                 if req_type == constants.OP_NAMEOBJ_MOUNT: # $01 - dez.: 1
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
