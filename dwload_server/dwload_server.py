@@ -80,15 +80,6 @@ def drivewire_checksum(data):
 
 
 
-
-def print_settings(ser):
-    print("Settings for serial %r:" % ser.name)
-    settings = ser.getSettingsDict()
-    for k, v in sorted(settings.items()):
-        print("%20s : %s" % (k, v))
-    sys.stdout.flush()
-
-
 def print_bytes(bytes):
     for item in bytes:
         if isinstance(item, int):
@@ -98,40 +89,6 @@ def print_bytes(bytes):
         else:
             sys.stdout.write(" $%02x " % ord(item))
         sys.stdout.flush()
-
-
-class SerialInterface(object):
-    def __init__(self):
-        self.conn = serial.Serial()
-            
-    def connect(self, port):
-        self.conn.port = port
-        self.conn.baudrate = 57600
-        try:
-            self.conn.open()
-        except serial.serialutil.SerialException as err:
-            sys.stderr.write("\nERROR: Can't open serial %r !\n" % port)
-            sys.stderr.write("\nRight Port? Port not in use? User rights ok?\n")
-            sys.stderr.write("Look at http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter for help!\n")
-            sys.stderr.write("\n(Origin error is: %s)\n\n" % err)
-            sys.exit(-1)
-        print_settings(self.ser)
-
-    def read(self, size=1):
-        log.debug("READ %i:", size)
-        data = self.conn.read(size)
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        return data
-
-    def write(self, data):
-        log.debug("WRITE %i:", len(data))
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        self.conn.write(data)
-
 
 
 class DwLoadServer(object):
@@ -360,12 +317,47 @@ class BeckerServer(BaseServer):
         self.conn.sendall(data)
 
 
-def start_server(root_dir, port, log_level=logging.INFO):
-    setup_logging(level=log_level)
+class SerialServer(BaseServer):
+    def __init__(self, port, *args, **kwargs):
+        self.port=port
+        self.conn = serial.Serial()
 
-    dwload = DwLoadServer(root_dir=root_dir, log_level=log_level)
-    dwload.connect(port)
-    dwload.serve_forever()
+        self.dwload_server = DwLoadServer(self, *args, **kwargs)
+
+        self.conn.port = port
+        self.conn.baudrate = 57600
+        try:
+            self.conn.open()
+        except serial.serialutil.SerialException as err:
+            sys.stderr.write("\nERROR: Can't open serial %r !\n" % port)
+            sys.stderr.write("\nRight Port? Port not in use? User rights ok?\n")
+            sys.stderr.write("Look at http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter for help!\n")
+            sys.stderr.write("\n(Origin error is: %s)\n\n" % err)
+            sys.exit(-1)
+
+        log.debug("Settings for serial %r:", self.conn.name)
+        settings = self.conn.getSettingsDict()
+        for k, v in sorted(settings.items()):
+            log.debug("\t%15s : %s", k, v)
+
+    def serve_forever(self):
+        while True:
+            self.dwload_server.serve_forever()
+
+    def read(self, size=1):
+        log.debug("READ %i:", size)
+        data = self.conn.read(size)
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        return data
+
+    def write(self, data):
+        log.debug("WRITE %i:", len(data))
+        if LOG_DEZ:
+            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
+        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        self.conn.write(data)
 
 
 
@@ -406,10 +398,15 @@ if __name__ == '__main__':
     log_level=logging.DEBUG
     setup_logging(level=log_level)
 
-    dwload_server=BeckerServer(
-        ip="127.0.0.1", port=65504,
+    dwload_server=SerialServer(
+        port="/dev/ttyUSB0",
+        # port="COM3"
         root_dir=root_dir, log_level=log_level
     )
+    # dwload_server=BeckerServer(
+    #     ip="127.0.0.1", port=65504,
+    #     root_dir=root_dir, log_level=log_level
+    # )
     dwload_server.serve_forever()
 
     print(" --- END --- ")
