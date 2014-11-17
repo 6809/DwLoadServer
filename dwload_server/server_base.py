@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding:utf-8
 
 """
@@ -9,17 +8,14 @@
     :copyleft: 2014 by the DwLoadServer team, see AUTHORS for more details.
     :license: GNU GPL v3 or above, see LICENSE for more details.
 """
-import argparse
+
+from __future__ import absolute_import, division, print_function
 
 import os
 import logging
-import socket
 import sys
 import struct
 import math
-from dragonlib.utils.byte_word_values import word2bytes
-import time
-
 
 try:
     import serial
@@ -31,43 +27,13 @@ try:
 except ImportError as err:
     raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
 
-from dragonlib.api import Dragon32API as Api
-from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
+from dragonlib.utils.byte_word_values import word2bytes
+from dwload_server.exceptions import DwNotReadyError, DwReadError, DwWriteError, DwException
+
 
 LOG_DEZ=False
 
 log = logging.getLogger(__name__)
-
-
-
-# http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#appendix-a-error-codes
-
-class DwException(BaseException):
-    pass
-    # def __init__(self, message):
-    #     self.message = message
-    #     log.error(message)
-    #     log.debug("Send DW error code $%02x back.", self.ERROR_CODE)
-    #     ser.write_byte(self.ERROR_CODE)
-
-
-class DwCrcError(DwException):
-    """ CRC Error (if the Server’s computed checksum doesn’t match a write request from the Dragon/CoCo) """
-    ERROR_CODE = 0xF3 # dez.: 243
-
-class DwReadError(DwException):
-    """ Read Error (if the Server encounters an error when reading a sector from a virtual drive) """
-    ERROR_CODE = 0xF4 # dez.: 244
-
-class DwWriteError(DwException):
-    """ Write Error (if the Server encounters an error when writing a sector) """
-    ERROR_CODE = 0xF5 # dez.: 245
-
-class DwNotReadyError(DwException):
-    """ Not Ready Error (if the a command requests accesses a non- existent virtual drive) """
-    ERROR_CODE = 0xF6 # dez.: 246
-
-
 
 def drivewire_checksum(data):
     """
@@ -95,11 +61,10 @@ class DwLoadServer(object):
     """
     The DWLOAD server
     """
-    def __init__(self, interface, root_dir, log_level):
+    def __init__(self, interface, root_dir):
         self.interface = interface
         self.root_dir = os.path.normpath(root_dir)
         log.info("Root directory is: %r", self.root_dir)
-        self.log_level=log_level
 
         self.drive_number = 256
         self.file_info = {}
@@ -260,153 +225,3 @@ class BaseServer(object):
         return byte_count, content
 
 
-class BeckerServer(BaseServer):
-    def __init__(self, ip="127.0.0.1", port=65504, *args, **kwargs):
-        self.ip=ip
-        self.port=port
-
-        self.dwload_server = DwLoadServer(self, *args, **kwargs)
-
-        log.critical("Listen for incoming connections on %s:%s ...", self.ip, self.port)
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind((ip, port))
-        self.sock.listen(1)
-
-        self.sock.settimeout(10)
-        log.debug("Socket timeout: %r", self.sock.gettimeout())
-
-    def serve_forever(self):
-        while True:
-            log.critical("Waiting for a connection on %s:%s ...", self.ip, self.port)
-            self.conn, client_address = self.sock.accept()
-            log.critical("Incoming connection from %r", client_address)
-
-            try:
-                self.dwload_server.serve_forever()
-            except ConnectionError as err:
-                log.error("ERROR: %s", err)
-
-    def recv_all(self, size):
-        buf = []
-        while size>0:
-            data = self.conn.recv(size)
-            if data:
-                log.debug("\tReceive %i Bytes", len(data))
-            buf.append(data)
-            size -= len(data)
-            if size>0:
-                time.sleep(0.1)
-        return b''.join(buf)
-
-    def read(self, size=1):
-        log.debug("READ %i:", size)
-        data = self.recv_all(size)
-        if len(data)!=size:
-            log.error("Receive %i Bytes, but %i are expected!", len(data), size)
-
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        return data
-
-    def write(self, data):
-        log.debug("WRITE %i:", len(data))
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        self.conn.sendall(data)
-
-
-class SerialServer(BaseServer):
-    def __init__(self, port, *args, **kwargs):
-        self.port=port
-        self.conn = serial.Serial()
-
-        self.dwload_server = DwLoadServer(self, *args, **kwargs)
-
-        self.conn.port = port
-        self.conn.baudrate = 57600
-        try:
-            self.conn.open()
-        except serial.serialutil.SerialException as err:
-            sys.stderr.write("\nERROR: Can't open serial %r !\n" % port)
-            sys.stderr.write("\nRight Port? Port not in use? User rights ok?\n")
-            sys.stderr.write("Look at http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter for help!\n")
-            sys.stderr.write("\n(Origin error is: %s)\n\n" % err)
-            sys.exit(-1)
-
-        log.debug("Settings for serial %r:", self.conn.name)
-        settings = self.conn.getSettingsDict()
-        for k, v in sorted(settings.items()):
-            log.debug("\t%15s : %s", k, v)
-
-    def serve_forever(self):
-        while True:
-            self.dwload_server.serve_forever()
-
-    def read(self, size=1):
-        log.debug("READ %i:", size)
-        data = self.conn.read(size)
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        return data
-
-    def write(self, data):
-        log.debug("WRITE %i:", len(data))
-        if LOG_DEZ:
-            log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
-        self.conn.write(data)
-
-
-
-def cli():
-    # TODO: serial/becker
-    parser = argparse.ArgumentParser(
-        description="DWLOAD Server written in Python (GNU GPL v3+)"
-        #epilog="foo"
-    )
-
-    parser.add_argument(
-        '--port', dest='port', required=True,
-        help="Serial port. Windows e.g.: 'COM3' - Linux e.g.: '/dev/ttyUSB0'"
-    )
-    parser.add_argument(
-        '--root_dir', dest='root_dir', required=True,
-        help="Directory for load/store requested files, e.g.: 'dwload-demo-files'"
-    )
-    parser.add_argument(
-        '--log_level', dest="log_level", type=int, choices=LOG_LEVELS, default=logging.INFO,
-        help="Logging level: 10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL/FATAL"
-    )
-
-    args = parser.parse_args()
-
-    start_server(
-        root_dir=args.root_dir,
-        port=args.port,
-        log_level=args.log_level
-    )
-
-
-
-if __name__ == '__main__':
-    # cli()
-
-    root_dir=os.path.expanduser("~/workspace/DWLOAD/dwload-demo-files")
-    log_level=logging.DEBUG
-    setup_logging(level=log_level)
-
-    dwload_server=SerialServer(
-        port="/dev/ttyUSB0",
-        # port="COM3"
-        root_dir=root_dir, log_level=log_level
-    )
-    # dwload_server=BeckerServer(
-    #     ip="127.0.0.1", port=65504,
-    #     root_dir=root_dir, log_level=log_level
-    # )
-    dwload_server.serve_forever()
-
-    print(" --- END --- ")
