@@ -121,7 +121,11 @@ class SerialServer(BaseServer):
 
     def serve_forever(self):
         while True:
-            self.dwload_server.serve_forever()
+            try:
+                self.dwload_server.serve_forever()
+            finally:
+                log.critical("Finally: Close serial connection.")
+                self.conn.close()
 
     def read(self, size=1):
         log.debug("READ %i:", size)

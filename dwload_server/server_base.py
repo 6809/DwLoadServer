@@ -17,6 +17,7 @@ import sys
 import struct
 import math
 
+
 try:
     import serial
 except ImportError as err:
@@ -29,11 +30,13 @@ except ImportError as err:
 
 from dragonlib.utils.byte_word_values import word2bytes
 from dwload_server.exceptions import DwNotReadyError, DwReadError, DwWriteError, DwException
-
-
-LOG_DEZ=False
+from dwload_server.utils.hook import DW_HOOKS
+from dwload_server import constants
 
 log = logging.getLogger(__name__)
+
+LOG_DEZ = False
+
 
 def drivewire_checksum(data):
     """
@@ -43,7 +46,6 @@ def drivewire_checksum(data):
     for b in data:
         checksum += b
     return checksum
-
 
 
 def print_bytes(bytes):
@@ -61,6 +63,7 @@ class DwLoadServer(object):
     """
     The DWLOAD server
     """
+
     def __init__(self, interface, root_dir):
         self.interface = interface
         self.root_dir = os.path.normpath(root_dir)
@@ -78,6 +81,8 @@ class DwLoadServer(object):
 
         log.info("Filename %r attached to drive number: %i", filename, self.drive_number)
         self.interface.write_byte(self.drive_number)
+
+        DW_HOOKS.call_post(constants.OP_NAMEOBJ_MOUNT, self, filename, self.drive_number)
 
     def get_filepath_lsn(self):
         drive_number = self.interface.read_byte()
@@ -162,6 +167,8 @@ class DwLoadServer(object):
 
         self.interface.write_byte(0x00) # confirm checksum
 
+        DW_HOOKS.call_post(constants.OP_WRITE, self, filepath, lsn)
+
         log.debug(" *** block written in file.")
 
     def serve_forever(self):
@@ -170,29 +177,30 @@ class DwLoadServer(object):
             req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
-                if req_type == 0x01: # dez.: 1 - ransaction OP_NAMEOBJ_MOUNT
+                if req_type == constants.OP_NAMEOBJ_MOUNT: # $01 - dez.: 1
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
                     log.debug(" *** handle filename: ***")
                     self.handle_filename()
-
-                # TODO: 0x02 for "SAVE"
-
-                elif req_type == 0xd2: # dez.: 210
+                elif req_type == constants.OP_READ_EXTENDED: # $d2 - dez.: 210
                     log.debug(" *** Read Extended Transaction: ***")
                     self.read_extended_transaction()
-
-                elif req_type == 0x57: # dez.: 87
+                elif req_type == constants.OP_WRITE: # $57 - dez.: 87
                     log.debug(" *** Write Transaction: ***")
                     self.write_transaction()
-
+                # TODO: 0x02 for "SAVE"
                 else:
-                    msg="Request type $%02x (dez.: %i) is not supported, yet." % (
+                    msg = "Request type $%02x (dez.: %i) is not supported, yet." % (
                         req_type, req_type
                     )
                     # raise NotImplementedError(msg)
                     log.error(msg)
                     self.interface.write_byte(0x00)
+
             except DwException as err:
+                root_logger = logging.getLogger()
+                if root_logger.level<=10:
+                    raise
+                sys.exit()
                 log.error(err)
                 log.debug("Send DW error code $%02x back.", err.ERROR_CODE)
                 self.interface.write_byte(err.ERROR_CODE)
