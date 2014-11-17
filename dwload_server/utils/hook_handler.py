@@ -41,20 +41,33 @@ class DwHooks(object):
             log.debug("Call %s post hook %r", name, func.__name__)
             func(*args, **kwargs)
 
+    def _call_hook_dict(self, d, op_code, *args, **kwargs):
+        try:
+            hooks = d[op_code]
+        except KeyError:
+            return # There are no hooks for this OP
+
+        self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]), *args, **kwargs)
+
     def call_request_start_hooks(self, *args, **kwargs):
         self._call_hooks(self.request_start_hooks, "RequestStart",*args, **kwargs)
 
     def call_post(self, op_code, *args, **kwargs):
-        try:
-            hooks = self.post_hooks[op_code]
-        except KeyError:
-            return # There are no hooks for this OP
+        self._call_hook_dict(self.post_hooks, op_code, *args, **kwargs)
+        
+    def call_pre(self, op_code, *args, **kwargs):
+        self._call_hook_dict(self.pre_hooks, op_code, *args, **kwargs)
 
-        self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]),*args, **kwargs)
 
 
 DW_HOOKS = DwHooks()
 
+
+def register_pre_hook(op_code):
+    def inner(func):
+        DW_HOOKS.register_pre_hook(op_code, func)
+        return func
+    return inner
 
 def register_post_hook(op_code):
     def inner(func):
@@ -67,16 +80,6 @@ def register_request_start_hook():
         DW_HOOKS.register_request_start_hook(func)
         return func
     return inner
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':

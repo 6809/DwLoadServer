@@ -17,6 +17,14 @@ import time
 log = logging.getLogger(__name__)
 
 
+def padding(data, size, b=b"\x00"):
+    quanta, leftover = divmod(len(data), size)
+    # Pad the last quantum with zero bits if necessary
+    if leftover:
+        data += (b * (size - leftover))
+    return data
+
+
 def backup_rename(filepath):
     """
     renamed filepath if it's a existing file by expand filename with last modified time

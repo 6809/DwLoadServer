@@ -35,6 +35,12 @@ from dwload_server import constants
 
 log = logging.getLogger(__name__)
 
+
+# FIXME: Import for register:
+import dwload_server.hooks.read_ascii
+import dwload_server.hooks.save_ascii
+
+
 LOG_DEZ = False
 
 
@@ -104,11 +110,13 @@ class DwLoadServer(object):
         return filepath, lsn
 
     def read_extended_transaction(self):
-        filepath, lsn = self.get_filepath_lsn()
+        self.filepath, lsn = self.get_filepath_lsn()
 
-        log.info("Send chunk of file %r", filepath)
+        DW_HOOKS.call_pre(constants.OP_READ_EXTENDED, self, self.filepath, lsn)
+
+        log.info("Send chunk of file %r", self.filepath)
         try:
-            with open(filepath, "rb") as f:
+            with open(self.filepath, "rb") as f:
                 filesize = os.fstat(f.fileno()).st_size
                 chunk_count = math.ceil(filesize / 256)
                 log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
@@ -195,7 +203,8 @@ class DwLoadServer(object):
                     msg = "Request type $%02x (dez.: %i) is not supported, yet." % (
                         req_type, req_type
                     )
-                    # raise NotImplementedError(msg)
+                    if root_logger.level<=10:
+                        raise NotImplementedError(msg)
                     log.error(msg)
                     self.interface.write_byte(0x00)
 
