@@ -3,8 +3,6 @@ DwLoadServer
 
 DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
 
-It's in unuseable, experimental state and currently nothing more then some tests scripts.
-
 
 == current state
 
