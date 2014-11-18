@@ -6,6 +6,8 @@ DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
 
 == current state
 
+Only tested with Python 3 !
+
 Tested DWEEBS:
 
 |= DWEEB     | example                         | Description
@@ -25,6 +27,7 @@ Implemented DriveWire Transactions:
 
 * support {{{SAVE}}}
 * compare checksum
+* add support for Python 2.7
 
 
 == installation
