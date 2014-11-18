@@ -51,4 +51,4 @@ def save_ascii_post_write_hook(server, filepath, lsn):
 
     log.info("Create %r...", bas_filepath)
     with open(bas_filepath, "w") as f:
-        f.write("\n".join(ascii_listing))
+        f.write(ascii_listing)
