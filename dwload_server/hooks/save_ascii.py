@@ -44,7 +44,12 @@ def save_ascii_post_write_hook(server, filepath, lsn):
 
     api = Dragon32API()
 
-    ascii_listing = api.bin2bas(content)
+    try:
+        ascii_listing = api.bin2bas(content)
+    except Exception as err:
+        log.error("Can't parse BASIC file: %s", err)
+        log.info("content: %s", repr(content))
+        return
 
     bas_filepath = filepath + ".bas"
     backup_rename(bas_filepath)
