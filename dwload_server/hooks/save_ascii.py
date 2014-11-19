@@ -17,7 +17,7 @@ from dragonlib.utils.logging_utils import log_bytes, log_hexlines
 
 from dwload_server import constants
 from dwload_server.utils import hook_handler
-from dwload_server.utils.file_tools import backup_rename, rename_with_backup
+from dwload_server.utils.file_tools import backup_rename, rename_with_backup, has_extension
 
 
 log = logging.getLogger(__name__)
@@ -28,9 +28,6 @@ class SaveFilenames(object):
         self.basefilepath = os.path.splitext(filepath)[0]
         self.dwl_filepath = self.basefilepath + ".DWL"
         self.bas_filepath = self.basefilepath + ".BAS"
-
-def has_extension(filepath, ext):
-    return filepath.upper().endswith(ext.upper())
 
 
 @hook_handler.register_pre_hook(constants.OP_WRITE)
@@ -43,7 +40,7 @@ def save_ascii_pre_write_hook(server, filepath, lsn):
 
     backup_rename(filepath)
 
-    if has_extension(filepath, ".BAS"):
+    if has_extension(filepath, ".BAS"): # always case-insensitive
         filenames = SaveFilenames(filepath)
         backup_rename(filenames.bas_filepath)
         backup_rename(filenames.dwl_filepath)

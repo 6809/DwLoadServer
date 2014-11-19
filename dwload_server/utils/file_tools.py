@@ -25,6 +25,13 @@ def padding(data, size, b=b"\x00"):
     return data
 
 
+def has_extension(filepath, ext):
+    """
+    case-insensitive compare if filepath has the given extension
+    """
+    return filepath.upper().endswith(ext.upper())
+
+
 def backup_rename(filepath):
     """
     renamed filepath if it's a existing file by expand filename with last modified time

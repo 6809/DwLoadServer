@@ -12,7 +12,7 @@
 import logging
 import os
 
-from dwload_server.utils.file_tools import backup_rename, padding
+from dwload_server.utils.file_tools import backup_rename, padding, has_extension
 from dragonlib.api import Dragon32API
 from dwload_server import constants
 from dwload_server.utils import hook_handler
@@ -33,7 +33,7 @@ def change_filepath(server, new_filepath):
 def read_ascii_read_pre_hook(server, filepath, lsn):
     # We read the first sector of the last requested filepath
 
-    if not filepath.endswith(".bas") and not filepath.endswith(".BAS"):
+    if has_extension(filepath, ".BAS"): # always case-insensitive
         log.info("Don't convert to Dragon DOS Binary: No .BAS file, ok")
         return
 
