@@ -190,7 +190,10 @@ class DwLoadServer(object):
             try:
                 if req_type == constants.OP_NAMEOBJ_MOUNT: # $01 - dez.: 1
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
-                    log.debug(" *** handle filename: ***")
+                    log.debug(" *** mount name object: ***")
+                    self.handle_filename()
+                elif req_type == constants.OP_NAMEOBJ_CREATE: # $02 - dez.: 2
+                    log.debug(" *** create name object: ***")
                     self.handle_filename()
                 elif req_type == constants.OP_READ_EXTENDED: # $d2 - dez.: 210
                     log.debug(" *** Read Extended Transaction: ***")
@@ -198,7 +201,6 @@ class DwLoadServer(object):
                 elif req_type == constants.OP_WRITE: # $57 - dez.: 87
                     log.debug(" *** Write Transaction: ***")
                     self.write_transaction()
-                # TODO: 0x02 for "SAVE"
                 else:
                     msg = "Request type $%02x (dez.: %i) is not supported, yet." % (
                         req_type, req_type
