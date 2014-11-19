@@ -33,7 +33,9 @@ from dwload_server.exceptions import DwNotReadyError, DwReadError, DwWriteError,
 from dwload_server.utils.hook_handler import DW_HOOKS
 from dwload_server import constants
 
+
 log = logging.getLogger(__name__)
+root_logger = logging.getLogger()
 
 
 # FIXME: Import for register:
@@ -184,9 +186,6 @@ class DwLoadServer(object):
         while True:
             req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
-
-
-
             try:
                 if req_type == constants.OP_NAMEOBJ_MOUNT: # $01 - dez.: 1
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
@@ -211,7 +210,6 @@ class DwLoadServer(object):
                     self.interface.write_byte(0x00)
 
             except DwException as err:
-                root_logger = logging.getLogger()
                 if root_logger.level<=10:
                     raise
                 sys.exit()
