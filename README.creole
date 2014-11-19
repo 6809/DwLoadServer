@@ -9,6 +9,7 @@ Here a feature list:
 * load/save files via DWLOAD
 * on-the-fly converting ASCII BASIC listing (see below)
 * backup all files on save
+* Support [[http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter|USB Adapter]] and [[http://www.6809.org.uk/xroar/doc/xroar.shtml#Becker-port|Becker TCP/IP Interface]].
 
 === current state
 
@@ -18,7 +19,7 @@ Tested DWEEBS:
 
 |= DWEEB     | example                         | Description
 | **DLOAD**  | {{{DLOAD}}}                     | Load {{{AUTOLOAD.DWL}}} (Used on Dragon startup)
-| **SAVE**   | {{{DLOAD"SAVE""MYFILE.BAS"}}} | Save BASIC listing
+| **SAVE**   | {{{DLOAD"SAVE""MYFILE.BAS"}}}   | Save BASIC listing
 | **RESAVE** | {{{DLOAD"RESAVE""MYFILE.BAS"}}} | Save BASIC listing
 
 
@@ -33,9 +34,24 @@ Implemented DriveWire Transactions:
 
 === TODO
 
+* dynamic "AUTOLOAD.DWL" (see below)
 * compare checksum
 * add support for Python 2.7
 * write unittests
+
+==== TODO: dynamic "AUTOLOAD.DWL"
+
+The current idea is like this:
+1. file "AUTOLOAD.DWL" is requested
+2. the server looks, if there is a "AUTOLOAD.DWL.py" file
+3. If exist: Start "AUTOLOAD.DWL.py":
+3.1. Generate a ASCII BASIC listing (template engine)
+3.2. convert ASCII to Dragon DOS Binary Format (using DragonLib)
+3.3. send DWL stream to stdout
+4. send the stdout output form "AUTOLOAD.DWL.py" back to the DWLOAD client machine
+5. If "AUTOLOAD.DWL.py" not exists, look for "AUTOLOAD.DWL" the origin filename and send his content
+
+see also: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946&start=10#p12165
 
 
 === on-the-fly converting ASCII BASIC listing
