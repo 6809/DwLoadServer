@@ -36,27 +36,27 @@ class DwHooks(object):
     def register_request_start_hook(self, func):
         self.request_start_hooks.append(func)
 
-    def _call_hooks(self, hooks, name, *args, **kwargs):
+    def _call_hooks(self, hooks, name, hook_type, *args, **kwargs):
         for func in hooks:
-            log.debug("Call %s post hook %r", name, func.__name__)
+            log.debug("Call %s %s hook %r", name, hook_type, func.__name__)
             func(*args, **kwargs)
 
-    def _call_hook_dict(self, d, op_code, *args, **kwargs):
+    def _call_hook_dict(self, d, op_code, hook_type, *args, **kwargs):
         try:
             hooks = d[op_code]
         except KeyError:
             return # There are no hooks for this OP
 
-        self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]), *args, **kwargs)
+        self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]), hook_type, *args, **kwargs)
 
     def call_request_start_hooks(self, *args, **kwargs):
-        self._call_hooks(self.request_start_hooks, "RequestStart",*args, **kwargs)
+        self._call_hooks(self.request_start_hooks, "RequestStart", "start", *args, **kwargs)
 
     def call_post(self, op_code, *args, **kwargs):
-        self._call_hook_dict(self.post_hooks, op_code, *args, **kwargs)
+        self._call_hook_dict(self.post_hooks, op_code, "post", *args, **kwargs)
         
     def call_pre(self, op_code, *args, **kwargs):
-        self._call_hook_dict(self.pre_hooks, op_code, *args, **kwargs)
+        self._call_hook_dict(self.pre_hooks, op_code, "pre", *args, **kwargs)
 
 
 
