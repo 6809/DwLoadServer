@@ -3,8 +3,13 @@ DwLoadServer
 
 DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
 
+== features
 
-== current state
+* load/save files via DWLOAD
+* on-the-fly converting ASCII BASIC listing (see below)
+* backup all files on save
+
+=== current state
 
 Only tested with Python 3 !
 
@@ -12,22 +17,55 @@ Tested DWEEBS:
 
 |= DWEEB     | example                         | Description
 | **DLOAD**  | {{{DLOAD}}}                     | Load {{{AUTOLOAD.DWL}}} (Used on Dragon startup)
+| **SAVE**   | {{{DLOAD"SAVE""MYFILE.BAS"}}} | Save BASIC listing
 | **RESAVE** | {{{DLOAD"RESAVE""MYFILE.BAS"}}} | Save BASIC listing
 
 
 Implemented DriveWire Transactions:
 
-|= hex |= dez |= DW name         | Description
-| $01  | 1    | OP_NAMEOBJ_MOUNT | Mount a file to a virtual drive number
-| $d2  | 210  | OP_READEX        | Send 256 bytes sector from the DWLOAD server to the client
-| $57  | 87   | OP_WRITE         | Write 256 bytes sector of data from the client into a file on the server
+|= hex |= dez |= DW name          | Description
+| $01  | 1    | OP_NAMEOBJ_MOUNT  | Mount a file to a virtual drive number
+| $02  | 2    | OP_NAMEOBJ_CREATE | (Does in this implementation the same as OP_NAMEOBJ_MOUNT)
+| $d2  | 210  | OP_READEX         | Send 256 bytes sector from the DWLOAD server to the client
+| $57  | 87   | OP_WRITE          | Write 256 bytes sector of data from the client into a file on the server
 
 
-== TODO
+=== TODO
 
-* support {{{SAVE}}}
 * compare checksum
 * add support for Python 2.7
+* write unittests
+
+
+=== on-the-fly converting ASCII BASIC listing
+
+The server read/save ASCII BASIC listing and send/store them to the DWLOAD client on-the-fly.
+So you can edit listings on your PC and try them on your Dragon without any external conventions!
+
+e.g.: save
+{{{
+10 PRINT"HELLO WORLD!"
+DLOAD"SAVE""HELLO.BAS"
+DWLOAD
+!
+OK
+}}}
+The server will create two files:
+
+|= filename |= format              |= description
+| HELLO.DWL | raw tokenized binary | Dragon DOS Binary Format data from the Dragon (256 Bytes padded)
+| HELLO.BAS | ASCII listing        | on-the-fly converted ASCII BASIC listing
+
+e.g. load (and execute):
+{{{
+DLOAD"HELLO.BAS"
+!HELLO WORLD!
+OK
+}}}
+(Note: the first {{{!}}} is from DWLOAD ROM routine)
+
+The server will read the {{{HELLO.BAS}}} ASCII listing and convert is on-the-fly to the needed Dragon DOS Binary Format
+and send this back to the Dragon.
 
 
 == installation
@@ -194,6 +232,7 @@ Interface help:
 
 == History
 
+* 19.11.2014 - v0.3.0 - Convert "ASCII BASIC listing" <-> "Dragon DOS Binary" on-the-fly while read/write
 * 17.11.2014 - v0.2.0 - Support Becker and Serial interface.
 * 14.11.2014 - v0.1.0 - Create bootstrap file that work under linux and windows.
 * 12.11.2014 - v0.0.1 - send a file works rudimentary
