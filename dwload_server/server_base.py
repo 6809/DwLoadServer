@@ -156,7 +156,7 @@ class DwLoadServer(object):
         log.info("Save chunk to: %r", filepath)
         chunk = self.interface.read(size=256)
         try:
-            with open(filepath, "ab") as f:
+            with open(filepath, "w+b") as f:
                 pos = 256 * lsn
                 log.debug("\tseek to: %i", pos)
                 f.seek(pos)

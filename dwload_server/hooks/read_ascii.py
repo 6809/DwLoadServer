@@ -16,6 +16,7 @@ from dwload_server.utils.file_tools import backup_rename, padding
 from dragonlib.api import Dragon32API
 from dwload_server import constants
 from dwload_server.utils import hook_handler
+from dragonlib.utils.logging_utils import log_hexlines
 
 
 log = logging.getLogger(__name__)
@@ -43,16 +44,23 @@ def read_ascii_read_pre_hook(server, filepath, lsn):
             change_filepath(server, dwl_filepath)
         return
 
+    log.info("Read ASCII listing from %r...", filepath)
     with open(filepath, "r") as f:
         basic_program_ascii = f.read()
 
     api = Dragon32API()
 
     data = api.bas2bin(basic_program_ascii,
-        # FIXME: load_address=None, exec_address=None
+        # FIXME:
+        load_address=0x1e01, exec_address=0x1e01 # from example AUTOLOAD.DWL
     )
+    
     log.debug("size before padding: %i Bytes", len(data))
+    log_hexlines(data, msg="before padding")
+
     data = padding(data, size=256, b=b"\x00")
+
+    log_hexlines(data, msg="after padding")
     log.debug("size after padding: %i Bytes", len(data))
 
     backup_rename(dwl_filepath)
@@ -68,7 +76,7 @@ if __name__ == "__main__":
     setup_logging(
         # level=1 # hardcore debug ;)
         level=10  # DEBUG
-        #         level=20  # INFO
+        # level=20  # INFO
         #         level=30  # WARNING
         #         level=40 # ERROR
         #         level=50 # CRITICAL/FATAL
@@ -81,7 +89,8 @@ if __name__ == "__main__":
     api = Dragon32API()
 
     data = api.bas2bin(basic_program_ascii,
-        # FIXME: load_address=None, exec_address=None
+        # FIXME:
+        load_address=1e01, exec_address=1e01 # from example
     )
 
     log.debug("size before padding: %i Bytes", len(data))

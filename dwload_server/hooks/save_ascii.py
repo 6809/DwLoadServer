@@ -10,8 +10,10 @@
 """
 
 import logging
+import os
 
 from dragonlib.api import Dragon32API
+from dragonlib.utils.logging_utils import log_bytes, log_hexlines
 
 from dwload_server import constants
 from dwload_server.utils import hook_handler
@@ -36,6 +38,9 @@ def save_ascii_post_write_hook(server, filepath, lsn):
     # TODO: Optimize this:
     with open(filepath, "rb") as f:
         content = f.read()
+
+    log_hexlines(content, msg="%s data:" % os.path.basename(filepath), level=logging.DEBUG)
+
     if not content.endswith(b"\x00\x00\x00"):
         log.info("File ends not with $00 $00 $00, ok.")
         return
@@ -51,9 +56,13 @@ def save_ascii_post_write_hook(server, filepath, lsn):
         log.info("content: %s", repr(content))
         return
 
+    log.debug("ASCII Listing:")
+    for line in ascii_listing.splitlines(True): # keepends=True
+        log.debug(repr(line))
+
     bas_filepath = filepath + ".bas"
     backup_rename(bas_filepath)
 
-    log.info("Create %r...", bas_filepath)
+    log.info("Save ASCII Listing to %r...", bas_filepath)
     with open(bas_filepath, "w") as f:
         f.write(ascii_listing)
