@@ -17,10 +17,36 @@ from dragonlib.utils.logging_utils import log_bytes, log_hexlines
 
 from dwload_server import constants
 from dwload_server.utils import hook_handler
-from dwload_server.utils.file_tools import backup_rename
+from dwload_server.utils.file_tools import backup_rename, rename_with_backup
 
 
 log = logging.getLogger(__name__)
+
+
+class SaveFilenames(object):
+    def __init__(self, filepath):
+        self.basefilepath = os.path.splitext(filepath)[0]
+        self.dwl_filepath = self.basefilepath + ".DWL"
+        self.bas_filepath = self.basefilepath + ".BAS"
+
+def has_extension(filepath, ext):
+    return filepath.upper().endswith(ext.upper())
+
+
+@hook_handler.register_pre_hook(constants.OP_WRITE)
+def save_ascii_pre_write_hook(server, filepath, lsn):
+    """
+    Just backup all files, before overwrite them
+    """
+    if lsn != 0:
+        log.debug("Not LSN==0: Do no file backup.")
+
+    backup_rename(filepath)
+
+    if has_extension(filepath, ".BAS"):
+        filenames = SaveFilenames(filepath)
+        backup_rename(filenames.bas_filepath)
+        backup_rename(filenames.dwl_filepath)
 
 
 @hook_handler.register_post_hook(constants.OP_WRITE)
@@ -60,9 +86,12 @@ def save_ascii_post_write_hook(server, filepath, lsn):
     for line in ascii_listing.splitlines(True): # keepends=True
         log.debug(repr(line))
 
-    bas_filepath = filepath + ".bas"
-    backup_rename(bas_filepath)
+    filenames = SaveFilenames(filepath)
 
-    log.info("Save ASCII Listing to %r...", bas_filepath)
-    with open(bas_filepath, "w") as f:
+    # Rename existing file (created by server) to foo.DWL
+    rename_with_backup(filepath, filenames.dwl_filepath)
+
+    # Create up-to-date .BAS file
+    log.info("Save ASCII Listing to %r...", filenames.bas_filepath)
+    with open(filenames.bas_filepath, "w") as f:
         f.write(ascii_listing)

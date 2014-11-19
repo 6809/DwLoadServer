@@ -50,6 +50,12 @@ def backup_rename(filepath):
         log.info("Backup as: %r", bak_filepath)
 
 
+def rename_with_backup(old_filepath, new_filepath):
+    backup_rename(new_filepath)
+    log.info("Rename %r to %r", old_filepath, new_filepath)
+    os.rename(old_filepath, new_filepath)
+
+
 if __name__ == '__main__':
     from dragonlib.utils.logging_utils import setup_logging
 

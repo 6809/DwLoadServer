@@ -151,12 +151,14 @@ class DwLoadServer(object):
 
 
     def write_transaction(self):
-        filepath, lsn = self.get_filepath_lsn()
+        self.filepath, lsn = self.get_filepath_lsn()
 
-        log.info("Save chunk to: %r", filepath)
+        DW_HOOKS.call_pre(constants.OP_WRITE, self, self.filepath, lsn)
+
+        log.info("Save chunk to: %r", self.filepath)
         chunk = self.interface.read(size=256)
         try:
-            with open(filepath, "w+b") as f:
+            with open(self.filepath, "w+b") as f:
                 pos = 256 * lsn
                 log.debug("\tseek to: %i", pos)
                 f.seek(pos)
@@ -177,7 +179,7 @@ class DwLoadServer(object):
 
         self.interface.write_byte(0x00) # confirm checksum
 
-        DW_HOOKS.call_post(constants.OP_WRITE, self, filepath, lsn)
+        DW_HOOKS.call_post(constants.OP_WRITE, self, self.filepath, lsn)
 
         log.debug(" *** block written in file.")
 
