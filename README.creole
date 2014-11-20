@@ -83,7 +83,7 @@ The generated listing looks like this:
 }}}
 s.: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977
 
-You must only call **DLOAD** on you Dragon to get this menu. Because a **DLOAD** will request **AUTOLOAD.DWL** and the Python server will call **AUTOLOAD.DWL.py**
+You must only call **DLOAD** on you Dragon to get this menu. Because a **DLOAD** will request **AUTOLOAD.DWL** and the Python server will all **.py** and call **AUTOLOAD.DWL.py** if exist.
 
 This feature make the following file:
 
