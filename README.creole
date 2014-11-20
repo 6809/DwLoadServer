@@ -55,11 +55,21 @@ Currently there is only one //pyscript// file: {{{AUTOLOAD.DWL.py}}} (see below)
 There exist a way to generate a dynamic DWLOAD menu.
 Just copy the file [[https://github.com/6809/DwLoadServer/blob/master/dwload-demo-files/AUTOLOAD.DWL.py|/dwload-demo-files/AUTOLOAD.DWL.py]] into your server root.
 
+The //pyscript// reads the server root directory and list all files into the DLOAD menu.
+e.g. the server root looks like this:
+{{{
+/HOME/FOO/DWLOAD-FILES
+  +--- AUTOLOAD.DWL.py
+  +--- HEXVIEW.BAS
+  +--- TEST.BAS
+  \--- SAVE
+}}}
+
 The generated listing looks like this:
 {{{
 10 CLS
 20 PRINT" *** DYNAMIC MENU ***  14:11:18"
-30 PRINT"/HOME/JENS/DWLOAD-FILES"
+30 PRINT"/HOME/FOO/DWLOAD-FILES"
 40 PRINT" 0 - HEXVIEW.BAS"
 50 PRINT" 1 - TEST.BAS"
 60 PRINT" 2 - SAVE"
@@ -72,6 +82,8 @@ The generated listing looks like this:
 130 GOTO 10
 }}}
 s.: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977
+
+You must only call **DLOAD** on you Dragon to get this menu. Because a **DLOAD** will request **AUTOLOAD.DWL** and the Python server will call **AUTOLOAD.DWL.py**
 
 This feature make the following file:
 
