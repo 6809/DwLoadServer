@@ -155,10 +155,16 @@ class DwLoadServer(object):
 
         DW_HOOKS.call_pre(constants.OP_WRITE, self, self.filepath, lsn)
 
-        log.info("Save chunk to: %r", self.filepath)
+        if lsn==0:
+            mode="wb"
+        else:
+            mode="r+b"
+
+        log.info("Save chunk with %r to: %r", mode, self.filepath)
         chunk = self.interface.read(size=256)
+
         try:
-            with open(self.filepath, "w+b") as f:
+            with open(self.filepath, mode) as f:
                 pos = 256 * lsn
                 log.debug("\tseek to: %i", pos)
                 f.seek(pos)

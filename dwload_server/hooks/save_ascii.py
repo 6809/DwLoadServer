@@ -37,6 +37,7 @@ def save_ascii_pre_write_hook(server, filepath, lsn):
     """
     if lsn != 0:
         log.debug("Not LSN==0: Do no file backup.")
+        return
 
     backup_rename(filepath)
 

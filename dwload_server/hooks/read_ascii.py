@@ -31,9 +31,7 @@ def change_filepath(server, new_filepath):
 
 @hook_handler.register_pre_hook(constants.OP_READ_EXTENDED)
 def read_ascii_read_pre_hook(server, filepath, lsn):
-    # We read the first sector of the last requested filepath
-
-    if has_extension(filepath, ".BAS"): # always case-insensitive
+    if not has_extension(filepath, ".BAS"): # always case-insensitive
         log.info("Don't convert to Dragon DOS Binary: No .BAS file, ok")
         return
 
@@ -43,6 +41,8 @@ def read_ascii_read_pre_hook(server, filepath, lsn):
         if os.path.isfile(dwl_filepath):
             change_filepath(server, dwl_filepath)
         return
+
+    # We read the first sector of the last requested filepath
 
     log.info("Read ASCII listing from %r...", filepath)
     with open(filepath, "r") as f:
