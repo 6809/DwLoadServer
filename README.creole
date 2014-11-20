@@ -42,14 +42,15 @@ Implemented DriveWire Transactions:
 ==== TODO: dynamic "AUTOLOAD.DWL"
 
 The current idea is like this:
-1. file "AUTOLOAD.DWL" is requested
-2. the server looks, if there is a "AUTOLOAD.DWL.py" file
-3. If exist: Start "AUTOLOAD.DWL.py":
-3.1. Generate a ASCII BASIC listing (template engine)
-3.2. convert ASCII to Dragon DOS Binary Format (using DragonLib)
-3.3. send DWL stream to stdout
-4. send the stdout output form "AUTOLOAD.DWL.py" back to the DWLOAD client machine
-5. If "AUTOLOAD.DWL.py" not exists, look for "AUTOLOAD.DWL" the origin filename and send his content
+
+# file "AUTOLOAD.DWL" is requested 
+# the server looks, if there is a "AUTOLOAD.DWL.py" file
+# If exist: Start "AUTOLOAD.DWL.py":
+## Generate a ASCII BASIC listing (template engine)
+## convert ASCII to Dragon DOS Binary Format (using DragonLib)
+## send DWL stream to stdout
+# send the stdout output form "AUTOLOAD.DWL.py" back to the DWLOAD client machine
+# If "AUTOLOAD.DWL.py" not exists, look for "AUTOLOAD.DWL" the origin filename and send his content
 
 see also: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946&start=10#p12165
 
