@@ -31,15 +31,20 @@ class DwHooks(object):
         self.pre_hooks.setdefault(op_code, []).append(func)
 
     def register_post_hook(self, op_code, func):
+        log.debug("Add %r to post %r hook", func.__name__, constants.CODE2NAME[op_code])
         self.post_hooks.setdefault(op_code, []).append(func)
 
     def register_request_start_hook(self, func):
+        log.debug("Add %r to RequestStart hook", func.__name__)
         self.request_start_hooks.append(func)
 
     def _call_hooks(self, hooks, name, hook_type, *args, **kwargs):
         for func in hooks:
             log.debug("Call %s %s hook %r", name, hook_type, func.__name__)
-            func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            if result is not None:
+                log.debug("hook returned content, skip rest hooks.")
+                return result
 
     def _call_hook_dict(self, d, op_code, hook_type, *args, **kwargs):
         try:
@@ -47,16 +52,16 @@ class DwHooks(object):
         except KeyError:
             return # There are no hooks for this OP
 
-        self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]), hook_type, *args, **kwargs)
+        return self._call_hooks(hooks, repr(constants.CODE2NAME[op_code]), hook_type, *args, **kwargs)
 
     def call_request_start_hooks(self, *args, **kwargs):
-        self._call_hooks(self.request_start_hooks, "RequestStart", "start", *args, **kwargs)
+        return self._call_hooks(self.request_start_hooks, "RequestStart", "start", *args, **kwargs)
 
     def call_post(self, op_code, *args, **kwargs):
-        self._call_hook_dict(self.post_hooks, op_code, "post", *args, **kwargs)
+        return self._call_hook_dict(self.post_hooks, op_code, "post", *args, **kwargs)
         
     def call_pre(self, op_code, *args, **kwargs):
-        self._call_hook_dict(self.pre_hooks, op_code, "pre", *args, **kwargs)
+        return self._call_hook_dict(self.pre_hooks, op_code, "pre", *args, **kwargs)
 
 
 

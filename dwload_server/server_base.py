@@ -38,11 +38,6 @@ log = logging.getLogger(__name__)
 root_logger = logging.getLogger()
 
 
-# FIXME: Import for register:
-import dwload_server.hooks.read_ascii
-import dwload_server.hooks.save_ascii
-
-
 LOG_DEZ = False
 
 
@@ -76,6 +71,11 @@ class DwLoadServer(object):
         self.interface = interface
         self.root_dir = os.path.normpath(root_dir)
         log.info("Root directory is: %r", self.root_dir)
+
+        # FIXME: Import for register and import it here, after logging init:
+        import dwload_server.hooks.read_ascii
+        import dwload_server.hooks.save_ascii
+        import dwload_server.hooks.dynamic_dwl
 
         self.drive_number = 256
         self.file_info = {}
@@ -114,22 +114,24 @@ class DwLoadServer(object):
     def read_extended_transaction(self):
         self.filepath, lsn = self.get_filepath_lsn()
 
-        DW_HOOKS.call_pre(constants.OP_READ_EXTENDED, self, self.filepath, lsn)
+        chunk = DW_HOOKS.call_pre(constants.OP_READ_EXTENDED, self, self.filepath, lsn)
+        if chunk is not None:
+            log.info("Use chunk from pre hook.")
+        else:
+            log.info("Send chunk of file %r", self.filepath)
+            try:
+                with open(self.filepath, "rb") as f:
+                    filesize = os.fstat(f.fileno()).st_size
+                    chunk_count = math.ceil(filesize / 256)
+                    log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
 
-        log.info("Send chunk of file %r", self.filepath)
-        try:
-            with open(self.filepath, "rb") as f:
-                filesize = os.fstat(f.fileno()).st_size
-                chunk_count = math.ceil(filesize / 256)
-                log.debug("Filesize: %i Bytes == %i * 256 Bytes chunks", filesize, chunk_count)
-
-                pos = 256 * lsn
-                log.debug("\tseek to: %i", pos)
-                f.seek(pos)
-                log.debug("\tread 256 bytes")
-                chunk = f.read(256) # TODO: padding to 256 bytes
-        except OSError as err:
-            raise DwReadError(err)
+                    pos = 256 * lsn
+                    log.debug("\tseek to: %i", pos)
+                    f.seek(pos)
+                    log.debug("\tread 256 bytes")
+                    chunk = f.read(256) # TODO: padding to 256 bytes
+            except OSError as err:
+                raise DwReadError(err)
 
         self.interface.write(chunk)
 

@@ -12,7 +12,7 @@
 import logging
 import os
 
-from dwload_server.utils.file_tools import backup_rename, padding, has_extension
+from dwload_server.utils.file_tools import backup_rename, padding, fnmatch_case_insensitve
 from dragonlib.api import Dragon32API
 from dwload_server import constants
 from dwload_server.utils import hook_handler
@@ -31,7 +31,7 @@ def change_filepath(server, new_filepath):
 
 @hook_handler.register_pre_hook(constants.OP_READ_EXTENDED)
 def read_ascii_read_pre_hook(server, filepath, lsn):
-    if not has_extension(filepath, ".BAS"): # always case-insensitive
+    if not fnmatch_case_insensitve(filepath, "*.BAS"):
         log.info("Don't convert to Dragon DOS Binary: No .BAS file, ok")
         return
 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     data = api.bas2bin(basic_program_ascii,
         # FIXME:
-        load_address=1e01, exec_address=1e01 # from example
+        load_address=0x1e01, exec_address=0x1e01 # from example
     )
 
     log.debug("size before padding: %i Bytes", len(data))

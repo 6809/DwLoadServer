@@ -8,6 +8,7 @@
     :copyleft: 2014 by the DwLoadServer team, see AUTHORS for more details.
     :license: GNU GPL v3 or above, see LICENSE for more details.
 """
+import fnmatch
 
 import logging
 import os
@@ -25,11 +26,15 @@ def padding(data, size, b=b"\x00"):
     return data
 
 
-def has_extension(filepath, ext):
-    """
-    case-insensitive compare if filepath has the given extension
-    """
-    return filepath.upper().endswith(ext.upper())
+def fnmatch_case_insensitve(filename, pattern):
+    return fnmatch.fnmatch(filename.upper(), pattern.upper())
+
+
+def fnmatch_case_insensitve2(filename, patterns):
+    for pattern in patterns:
+        if fnmatch.fnmatch(filename.upper(), pattern.upper()):
+            return True
+    return False
 
 
 def backup_rename(filepath):
@@ -69,7 +74,7 @@ if __name__ == '__main__':
     setup_logging(
         level=1 # hardcore debug ;)
         # level=10  # DEBUG
-        #         level=20  # INFO
+        # level=20  # INFO
         #         level=30  # WARNING
         #         level=40 # ERROR
         #         level=50 # CRITICAL/FATAL
