@@ -39,7 +39,6 @@ SKIP_PATTERN = (
 
 SELECT_KEYS = string.digits + string.ascii_uppercase
 
-
 def generate_basic(path):
     log.info("Generate AUTOLOAD.DWL for directory %r...", path)
 
@@ -50,6 +49,19 @@ def generate_basic(path):
     for item in sorted(os.listdir(path)):
         if fnmatch_case_insensitve2(item, SKIP_PATTERN):
             log.info("Skip %r, ok.", item)
+            continue
+
+        abs_path = os.path.join(path, item)
+
+        # TODO: Support directories!
+        if os.path.isdir(abs_path):
+            log.error("Skip %r TODO: Support directories!", item)
+            continue
+
+        # TODO: filter filename with unsupported characters
+
+        if not os.path.isfile(abs_path):
+            log.info("Skip %r, not a file, ok.", item)
             continue
 
         try:
@@ -72,7 +84,7 @@ def generate_basic(path):
     for entry in dir_info:
         line_no += 10
         listing.append(
-            '{lineno} PRINT"{key} - {item}"'.format(
+            '{lineno} PRINT" {key} - {item}"'.format(
                 lineno=line_no,
                 key=entry[1],
                 item=entry[2],
