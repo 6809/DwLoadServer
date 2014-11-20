@@ -8,6 +8,7 @@ Here a feature list:
 
 * load/save files via DWLOAD
 * on-the-fly converting ASCII BASIC listing (see below)
+* dynamic "AUTOLOAD.DWL" (see below)
 * backup all files on save
 * Support [[http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter|USB Adapter]] and [[http://www.6809.org.uk/xroar/doc/xroar.shtml#Becker-port|Becker TCP/IP Interface]].
 
@@ -34,25 +35,48 @@ Implemented DriveWire Transactions:
 
 === TODO
 
-* dynamic "AUTOLOAD.DWL" (see below)
+* enhance {{{AUTOLOAD.DWL.py}}}, see: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977
 * compare checksum
 * add support for Python 2.7
 * write unittests
 
-==== TODO: dynamic "AUTOLOAD.DWL"
+=== pyscripts
 
-The current idea is like this:
+There is a general machanism to generate DLOAD responses via Python:
+ * Store in server root a python script, e.g.: "FOO.BAR.py"
+ * DLOAD the file (without .py extension) on client, e.g.: {{{DLOAD"FOO.BAR"}}}
 
-# file "AUTOLOAD.DWL" is requested 
-# the server looks, if there is a "AUTOLOAD.DWL.py" file
-# If exist: Start "AUTOLOAD.DWL.py":
-## Generate a ASCII BASIC listing (template engine)
-## convert ASCII to Dragon DOS Binary Format (using DragonLib)
-## send DWL stream to stdout
-# send the stdout output form "AUTOLOAD.DWL.py" back to the DWLOAD client machine
-# If "AUTOLOAD.DWL.py" not exists, look for "AUTOLOAD.DWL" the origin filename and send his content
+The script will be called via subprocess and it must write the Dragon DOS binary data back to stdout.
 
-see also: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946&start=10#p12165
+Currently there is only one //pyscript// file: {{{AUTOLOAD.DWL.py}}} (see below)
+
+==== dynamic "AUTOLOAD.DWL"
+
+There exist a way to generate a dynamic DWLOAD menu.
+Just copy the file [[https://github.com/6809/DwLoadServer/blob/master/dwload-demo-files/AUTOLOAD.DWL.py|/dwload-demo-files/AUTOLOAD.DWL.py]] into your server root.
+
+The generated listing looks like this:
+{{{
+10 CLS
+20 PRINT" *** DYNAMIC MENU ***  14:11:18"
+30 PRINT"/HOME/JENS/DWLOAD-FILES"
+40 PRINT" 0 - HEXVIEW.BAS"
+50 PRINT" 1 - TEST.BAS"
+60 PRINT" 2 - SAVE"
+70 PRINT"PLEASE SELECT (X FOR RELOAD) !"
+80 A$=INKEY$:IF A$="" GOTO 80
+90 IF A$="X" THEN DLOAD
+100 IF A$="0" THEN DLOAD"HEXVIEW.BAS"
+110 IF A$="1" THEN DLOAD"TEST.BAS"
+120 IF A$="2" THEN DLOAD"SAVE"
+130 GOTO 10
+}}}
+s.: http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977
+
+This feature make the following file:
+
+| [[https://github.com/6809/DwLoadServer/blob/master/dwload_server/hooks/dynamic_dwl.py|/dwload_server/hooks/dynamic_dwl.py]] | general API to 'pyscript' files |
+| [[https://github.com/6809/DwLoadServer/blob/master/dwload_server/pyscripts/autoload_dwl.py|/dwload_server/pyscripts/autoload_dwl.py]] | generates the DWLOAD menu |
 
 
 === on-the-fly converting ASCII BASIC listing
@@ -84,6 +108,11 @@ OK
 
 The server will read the {{{HELLO.BAS}}} ASCII listing and convert is on-the-fly to the needed Dragon DOS Binary Format
 and send this back to the Dragon.
+
+This feature make the following files:
+
+| [[https://github.com/6809/DwLoadServer/blob/master/dwload_server/hooks/read_ascii.py|/dwload_server/hooks/read_ascii.py]] | read ASCII listing and send as binary to client |
+| [[https://github.com/6809/DwLoadServer/blob/master/dwload_server/hooks/save_ascii.py|/dwload_server/hooks/save_ascii.py]] | save binary from client as ASCII on server |
 
 
 == installation
