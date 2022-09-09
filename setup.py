@@ -20,18 +20,6 @@ import dwload_server
 PACKAGE_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
-# convert creole to ReSt on-the-fly, see also:
-# https://code.google.com/p/python-creole/wiki/UseInSetup
-try:
-    from creole.setup_utils import get_long_description
-except ImportError as err:
-    if "check" in sys.argv or "register" in sys.argv or "sdist" in sys.argv or "--long-description" in sys.argv:
-        raise ImportError("%s - Please install python-creole >= v0.8 -  e.g.: pip install python-creole" % err)
-    long_description = None
-else:
-    long_description = get_long_description(PACKAGE_ROOT)
-
-
 setup(
     name="dwload_server",
     version=dwload_server.__version__,
@@ -45,7 +33,6 @@ setup(
     author_email="dwload_server@jensdiemer.de",
     description="DWLOAD server implemented in Python",
     keywords="6809 Dragon CoCo DriveWire",
-    long_description=long_description,
     url="https://github.com/DWLOAD/DwLoadServer",
     license="GPL v3+",
     classifiers=[
