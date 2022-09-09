@@ -1,0 +1,123 @@
+[tool.poetry]
+name = "dwload_server"
+version = "0.5.0.rc1"
+description = "DWLOAD server implemented in Python"
+authors = ["JensDiemer <dwload_server@jensdiemer.de>"]
+packages = [{ include = "dwload_server" }]
+keywords=["DWLOAD","DriveWire","6809","Dragon","CoCo"]
+classifiers = [
+    # http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: MacOS X",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: X11 Applications",
+    "Environment :: Other Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+readme="README.md"
+homepage="https://github.com/6809/DwLoadServer"
+
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+dragonlib = "*"  # https://github.com/6809/dragonlib
+pyserial = "*"  # https://github.com/pyserial/pyserial
+
+[tool.poetry.dev-dependencies]
+dev_shell = "*"  # https://github.com/jedie/dev-shell
+cmd2_ext_test = "*"
+poetry_publish = "*"
+tox = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-darker = "*"  # https://github.com/akaihola/pytest-darker
+flake8 = "*"
+isort = "*"
+darker = "*"  # https://github.com/akaihola/darker
+
+[tool.poetry.scripts]
+devshell = 'dwload_server.dev_shell:devshell_cmdloop'
+DragonPy = 'dragodwload_servernpy.core.gui_starter:gui_mainloop'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.masonry.api"
+
+
+[tool.darker]
+src = ['.']
+revision = "origin/main..."
+line_length = 120
+verbose = true
+skip_string_normalization = true
+diff = false
+check = false
+stdout = false
+isort = true
+lint = [
+    "flake8",
+]
+log_level = "INFO"
+
+
+[tool.isort]
+# https://pycqa.github.io/isort/docs/configuration/config_files/#pyprojecttoml-preferred-format
+atomic=true
+profile='black'
+line_length=120
+skip_glob=[".*", "*/htmlcov/*",]
+known_first_party=["dragonpy", "PyDC"]
+lines_after_imports=2
+
+
+[tool.coverage.run]
+omit = [".*"]
+
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/latest/customize.html#pyproject-toml
+minversion = "6.0"
+norecursedirs = ".* __pycache__ coverage* dist htmlcov"
+# sometimes helpfull "addopts" arguments:
+#    -vv
+#    --verbose
+#    --capture=no
+#    --trace-config
+#    --full-trace
+#    -p no:warnings
+addopts = """
+    --cov=.
+    --cov-report term-missing
+    --cov-report html
+    --cov-report xml
+    --no-cov-on-fail
+    --showlocals
+    --darker
+    --doctest-modules
+    --failed-first
+    --last-failed-no-failures all
+    --new-first
+    -p no:randomly
+"""
+# TODO: --mypy
+
+
+[tool.tox]
+# https://tox.readthedocs.io/en/latest/example/basic.html#pyproject-toml-tox-legacy-ini
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+envlist = py310,py39,py38
+skip_missing_interpreters = True
+[testenv]
+passenv = *
+whitelist_externals = pytest
+commands =
+    pytest
+"""

@@ -1,5 +1,0 @@
-# external Python packages
-#-------------------------
-
-# https://pypi.python.org/pypi/pyserial/
-pyserial
