@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -23,7 +21,7 @@ from dwload_server.utils.file_tools import backup_rename, rename_with_backup, fn
 log = logging.getLogger(__name__)
 
 
-class SaveFilenames(object):
+class SaveFilenames:
     def __init__(self, filepath):
         self.basefilepath = os.path.splitext(filepath)[0]
         self.dwl_filepath = self.basefilepath + ".DWL"

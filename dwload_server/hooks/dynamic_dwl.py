@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -24,7 +22,7 @@ root_logger = logging.getLogger()
 CONTENT_BUFFER = None
 
 
-class PyScriptBuffer(object):
+class PyScriptBuffer:
     def __init__(self):
         self.buffer = None
 

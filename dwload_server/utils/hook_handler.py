@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -20,7 +18,7 @@ from dwload_server import constants
 log = logging.getLogger(__name__)
 
 
-class DwHooks(object):
+class DwHooks:
     def __init__(self):
         self.request_start_hooks = []
         self.pre_hooks = {}

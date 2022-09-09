@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding:utf-8
 
 """
     DwLoadServer - A DWLOAD server written in Python
@@ -31,7 +30,7 @@ class RootDirAction(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
-class DwLoadServerCLI(object):
+class DwLoadServerCLI:
     def __init__(self):
         print("\nDWLOAD Server written in Python (GNU GPL v3+) v%s\n" % __version__)
 

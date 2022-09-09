@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -9,7 +7,6 @@
     :license: GNU GPL v3 or above, see LICENSE for more details.
 """
 
-from __future__ import absolute_import, division, print_function
 
 import os
 import logging
@@ -62,7 +59,7 @@ def print_bytes(bytes):
         sys.stdout.flush()
 
 
-class DwLoadServer(object):
+class DwLoadServer:
     """
     The DWLOAD server
     """
@@ -228,7 +225,7 @@ class DwLoadServer(object):
                 self.interface.write_byte(err.ERROR_CODE)
 
 
-class BaseServer(object):
+class BaseServer:
     def read_byte(self):
         raw_byte = self.read(1)
         return struct.unpack("B", raw_byte)[0]
