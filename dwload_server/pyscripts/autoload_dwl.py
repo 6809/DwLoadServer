@@ -11,18 +11,19 @@
 
 import argparse
 import datetime
-import os
 import logging
+import os
 import string
 import sys
+
 
 try:
     import dragonlib
 except ImportError as err:
     raise ImportError(f"dragonlib from https://github.com/jedie/DragonPy is needed: {err}")
 
-from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
 from dragonlib.api import Dragon32API
+from dragonlib.utils.logging_utils import LOG_LEVELS, setup_logging
 
 from dwload_server.utils.file_tools import fnmatch_case_insensitve2, padding
 
@@ -82,15 +83,11 @@ def generate_basic(path):
     line_no = 30
     for entry in dir_info:
         line_no += 10
-        listing.append(
-            f'{line_no} PRINT" {entry[1]} - {entry[2]}"'
-        )
+        listing.append(f'{line_no} PRINT" {entry[1]} - {entry[2]}"')
         # log.debug(entry)
 
     line_no += 10
-    listing.append(
-        f'{line_no} PRINT"PLEASE SELECT (X FOR RELOAD) !"'
-    )
+    listing.append(f'{line_no} PRINT"PLEASE SELECT (X FOR RELOAD) !"')
     line_no += 10
     listing.append(
         '{lineno} A$=INKEY$:IF A$="" GOTO {lineno}'.format(
@@ -98,21 +95,15 @@ def generate_basic(path):
         )
     )
     line_no += 10
-    listing.append(
-        f'{line_no} IF A$="X" THEN DLOAD'
-    )
+    listing.append(f'{line_no} IF A$="X" THEN DLOAD')
 
     for entry in dir_info:
         line_no += 10
-        listing.append(
-            f'{line_no} IF A$="{entry[1]}" THEN DLOAD"{entry[2]}"'
-        )
+        listing.append(f'{line_no} IF A$="{entry[1]}" THEN DLOAD"{entry[2]}"')
         log.debug(entry)
 
     line_no += 10
-    listing.append(
-        f'{line_no} GOTO 10'
-    )
+    listing.append(f'{line_no} GOTO 10')
 
     return "\n".join(listing)
 

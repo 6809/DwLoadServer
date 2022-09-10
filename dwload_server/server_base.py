@@ -130,9 +130,7 @@ class DwLoadServer:
         log.critical(repr(bytes))
 
         try:
-            client_checksum = self.interface.read_integer(
-                size=2
-            )  # 16bit checksum calculated by Dragon
+            client_checksum = self.interface.read_integer(size=2)  # 16bit checksum calculated by Dragon
         except:
             pass
         else:
