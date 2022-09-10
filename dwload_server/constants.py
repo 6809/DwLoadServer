@@ -8,6 +8,7 @@
 """
 
 # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/
+OP_NOP = 0x00
 OP_NAMEOBJ_MOUNT = 0x01
 OP_NAMEOBJ_CREATE = 0x02
 OP_READ_EXTENDED = 0xd2

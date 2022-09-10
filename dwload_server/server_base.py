@@ -187,8 +187,10 @@ class DwLoadServer:
             req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
-                if req_type == constants.OP_NAMEOBJ_MOUNT:  # $01 - dez.: 1
-                    # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
+                # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
+                if req_type == constants.OP_NOP:  # $00
+                    log.debug(" *** NOP Transaction -> ignored ***")
+                elif req_type == constants.OP_NAMEOBJ_MOUNT:  # $01 - dez.: 1
                     log.debug(" *** mount name object: ***")
                     self.handle_filename()
                 elif req_type == constants.OP_NAMEOBJ_CREATE:  # $02 - dez.: 2
