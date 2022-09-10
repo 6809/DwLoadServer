@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding:utf-8
 
 """
     copy this file into your DWLOAD server root directory!

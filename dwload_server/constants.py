@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -15,13 +13,9 @@ OP_NAMEOBJ_CREATE = 0x02
 OP_READ_EXTENDED = 0xd2
 OP_WRITE = 0x57
 
-CODE2NAME = dict( # A little hackish?
-    [
-        (v, "%s $%02x" % (k,v))
-        for k,v in locals().copy().items()
-        if k.startswith("OP")
-    ]
-)
+CODE2NAME = {  # A little hackish?
+    v: f"{k} ${v:02x}" for k, v in locals().copy().items() if k.startswith("OP")
+}
 
 if __name__ == '__main__':
     print(CODE2NAME)

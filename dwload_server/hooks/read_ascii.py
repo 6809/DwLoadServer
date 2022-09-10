@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
@@ -45,7 +43,7 @@ def read_ascii_read_pre_hook(server, filepath, lsn):
     # We read the first sector of the last requested filepath
 
     log.info("Read ASCII listing from %r...", filepath)
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         basic_program_ascii = f.read()
 
     api = Dragon32API()
@@ -83,7 +81,7 @@ if __name__ == "__main__":
     )
 
     filepath = os.path.expanduser("~/dwload-files/FOO.BAS")
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         basic_program_ascii = f.read()
 
     api = Dragon32API()

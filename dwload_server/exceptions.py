@@ -1,5 +1,3 @@
-# encoding:utf-8
-
 """
     DwLoadServer - A DWLOAD server written in Python
     ================================================
