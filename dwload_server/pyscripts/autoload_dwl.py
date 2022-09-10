@@ -19,7 +19,7 @@ import sys
 try:
     import dragonlib
 except ImportError as err:
-    raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
+    raise ImportError(f"dragonlib from https://github.com/jedie/DragonPy is needed: {err}")
 
 from dragonlib.utils.logging_utils import setup_logging, LOG_LEVELS
 from dragonlib.api import Dragon32API
@@ -76,26 +76,20 @@ def generate_basic(path):
 
     listing = [
         "10 CLS",
-        '20 PRINT" *** DYNAMIC MENU ***  %s"' % datetime.datetime.now().strftime("%H:%M:%S"),
-        '30 PRINT"%s"' % path.upper(),
+        f"20 PRINT\" *** DYNAMIC MENU ***  {datetime.datetime.now().strftime('%H:%M:%S')}\"",
+        f'30 PRINT"{path.upper()}"',
     ]
     line_no = 30
     for entry in dir_info:
         line_no += 10
         listing.append(
-            '{lineno} PRINT" {key} - {item}"'.format(
-                lineno=line_no,
-                key=entry[1],
-                item=entry[2],
-            )
+            f'{line_no} PRINT" {entry[1]} - {entry[2]}"'
         )
         # log.debug(entry)
 
     line_no += 10
     listing.append(
-        '{lineno} PRINT"PLEASE SELECT (X FOR RELOAD) !"'.format(
-            lineno=line_no
-        )
+        f'{line_no} PRINT"PLEASE SELECT (X FOR RELOAD) !"'
     )
     line_no += 10
     listing.append(
@@ -105,27 +99,19 @@ def generate_basic(path):
     )
     line_no += 10
     listing.append(
-        '{lineno} IF A$="X" THEN DLOAD'.format(
-            lineno=line_no
-        )
+        f'{line_no} IF A$="X" THEN DLOAD'
     )
 
     for entry in dir_info:
         line_no += 10
         listing.append(
-            '{lineno} IF A$="{key}" THEN DLOAD"{item}"'.format(
-                lineno=line_no,
-                key=entry[1],
-                item=entry[2],
-            )
+            f'{line_no} IF A$="{entry[1]}" THEN DLOAD"{entry[2]}"'
         )
         log.debug(entry)
 
     line_no += 10
     listing.append(
-        '{lineno} GOTO 10'.format(
-            lineno=line_no
-        )
+        f'{line_no} GOTO 10'
     )
 
     return "\n".join(listing)

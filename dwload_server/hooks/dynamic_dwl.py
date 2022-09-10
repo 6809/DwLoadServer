@@ -39,9 +39,9 @@ class PyScriptBuffer:
     def subprocess_call(self, timeout=3):
         cmd = [sys.executable, self.pypath,
             "--log_level=%i" % root_logger.level,
-            "--filepath=%s" % self.origin,
+            f"--filepath={self.origin}",
         ]
-        log.debug("Call: %s" % " ".join(cmd))
+        log.debug(f"Call: {' '.join(cmd)}")
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=sys.stderr)
         try:
             outs, errs = proc.communicate(timeout=timeout)

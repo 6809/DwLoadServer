@@ -7,7 +7,6 @@
     :license: GNU GPL v3 or above, see LICENSE for more details.
 """
 
-
 import logging
 import math
 import os
@@ -24,7 +23,6 @@ from dwload_server.utils.hook_handler import DW_HOOKS
 
 log = logging.getLogger(__name__)
 root_logger = logging.getLogger()
-
 
 LOG_DEZ = False
 
@@ -97,7 +95,7 @@ class DwLoadServer:
         filepath = os.path.join(self.root_dir, filename)
         log.debug("Filename %r path: %r", filename, filepath)
 
-        lsn = self.interface.read_integer(size=3) # Read "Logical Sector Number" (24 bit value)
+        lsn = self.interface.read_integer(size=3)  # Read "Logical Sector Number" (24 bit value)
         log.debug("Logical Sector Number (LSN): $%02x (dez.: %i) ", lsn, lsn)
 
         return filepath, lsn
@@ -120,7 +118,7 @@ class DwLoadServer:
                     log.debug("\tseek to: %i", pos)
                     f.seek(pos)
                     log.debug("\tread 256 bytes")
-                    chunk = f.read(256) # TODO: padding to 256 bytes
+                    chunk = f.read(256)  # TODO: padding to 256 bytes
             except OSError as err:
                 raise DwReadError(err)
 
@@ -132,13 +130,15 @@ class DwLoadServer:
         log.critical(repr(bytes))
 
         try:
-            client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
+            client_checksum = self.interface.read_integer(
+                size=2
+            )  # 16bit checksum calculated by Dragon
         except:
             pass
         else:
             log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-        self.interface.write_byte(0x00) # confirm checksum
+        self.interface.write_byte(0x00)  # confirm checksum
 
         log.debug(" *** block send.")
 
@@ -147,10 +147,10 @@ class DwLoadServer:
 
         DW_HOOKS.call_pre(constants.OP_WRITE, self, self.filepath, lsn)
 
-        if lsn==0:
-            mode="wb"
+        if lsn == 0:
+            mode = "wb"
         else:
-            mode="r+b"
+            mode = "r+b"
 
         log.info("Save chunk with %r to: %r", mode, self.filepath)
         chunk = self.interface.read(size=256)
@@ -172,10 +172,10 @@ class DwLoadServer:
         checksum = drivewire_checksum(chunk)
         log.info("Calucated checksum: $%x dez: %i", checksum, checksum)
 
-        client_checksum = self.interface.read_integer(size=2) # 16bit checksum calculated by Dragon
+        client_checksum = self.interface.read_integer(size=2)  # 16bit checksum calculated by Dragon
         log.debug("TODO: compare checksum: $%04x (dez.: %i)", client_checksum, client_checksum)
 
-        self.interface.write_byte(0x00) # confirm checksum
+        self.interface.write_byte(0x00)  # confirm checksum
 
         DW_HOOKS.call_post(constants.OP_WRITE, self, self.filepath, lsn)
 
@@ -187,17 +187,17 @@ class DwLoadServer:
             req_type = self.interface.read_byte()
             log.debug("Request type: $%02x", req_type)
             try:
-                if req_type == constants.OP_NAMEOBJ_MOUNT: # $01 - dez.: 1
+                if req_type == constants.OP_NAMEOBJ_MOUNT:  # $01 - dez.: 1
                     # http://sourceforge.net/p/drivewireserver/wiki/DriveWire_Specification/#transaction-op_nameobj_mount
                     log.debug(" *** mount name object: ***")
                     self.handle_filename()
-                elif req_type == constants.OP_NAMEOBJ_CREATE: # $02 - dez.: 2
+                elif req_type == constants.OP_NAMEOBJ_CREATE:  # $02 - dez.: 2
                     log.debug(" *** create name object: ***")
                     self.handle_filename()
-                elif req_type == constants.OP_READ_EXTENDED: # $d2 - dez.: 210
+                elif req_type == constants.OP_READ_EXTENDED:  # $d2 - dez.: 210
                     log.debug(" *** Read Extended Transaction: ***")
                     self.read_extended_transaction()
-                elif req_type == constants.OP_WRITE: # $57 - dez.: 87
+                elif req_type == constants.OP_WRITE:  # $57 - dez.: 87
                     log.debug(" *** Write Transaction: ***")
                     self.write_transaction()
                 else:
@@ -205,13 +205,13 @@ class DwLoadServer:
                         req_type,
                         req_type,
                     )
-                    if root_logger.level<=10:
+                    if root_logger.level <= 10:
                         raise NotImplementedError(msg)
                     log.error(msg)
                     self.interface.write_byte(0x00)
 
             except DwException as err:
-                if root_logger.level<=10:
+                if root_logger.level <= 10:
                     raise
                 sys.exit()
                 log.error(err)
@@ -244,5 +244,3 @@ class BaseServer:
         log.debug("Read block with a length of %i", byte_count)
         content = self.read(byte_count)
         return byte_count, content
-
-
