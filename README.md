@@ -36,7 +36,6 @@ Implemented DriveWire Transactions:
 
 ### TODO
 
-
 * enhance `AUTOLOAD.DWL.py`, see: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977)
 * compare checksum
 * add support for Python 2.7
@@ -45,7 +44,6 @@ Implemented DriveWire Transactions:
 ### pyscripts
 
 There is a general machanism to generate DLOAD responses via Python:
-
 
 * Store in server root a python script, e.g.: "FOO.BAR.py"
 * DLOAD the file (without .py extension) on client, e.g.: `DLOAD"FOO.BAR"`
@@ -134,6 +132,8 @@ This feature make the following files:
 | [/dwload_server/hooks/save_ascii.py](https://github.com/6809/DwLoadServer/blob/master/dwload_server/hooks/save_ascii.py) | save binary from client as ASCII on server      |
 
 ## installation
+
+
 
 ### Linux
 
@@ -303,7 +303,9 @@ Interface help:
 
 ## History
 
-
+* **dev**
+  * Modernize project
+  * Use dev-shell
 * 19.11.2014 - v0.3.0 - Convert "ASCII BASIC listing" <-> "Dragon DOS Binary" on-the-fly while read/write
 * 17.11.2014 - v0.2.0 - Support Becker and Serial interface.
 * 14.11.2014 - v0.1.0 - Create bootstrap file that work under linux and windows.
