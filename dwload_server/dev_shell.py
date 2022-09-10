@@ -1,5 +1,6 @@
 import argparse
 import logging
+import shutil
 from pathlib import Path
 
 import cmd2
@@ -18,7 +19,10 @@ from dwload_server.server_becker import run_becker_server
 from dwload_server.server_serial import run_serial_server
 
 
-PACKAGE_ROOT = Path(dwload_server.__file__).parent.parent.parent
+PACKAGE_ROOT = Path(dwload_server.__file__).parent.parent
+DWLOAD_DEMO_FILES = PACKAGE_ROOT / 'dwload-demo-files'
+if not DWLOAD_DEMO_FILES.is_dir():
+    raise IsADirectoryError(DWLOAD_DEMO_FILES)
 
 
 @cmd2.with_default_category('DWLOAD Server Commands')
@@ -72,7 +76,17 @@ class DwLoadCommandSet(DevShellBaseCommandSet):
 
     @with_argparser(run_parser)
     def do_run(self, args: argparse.Namespace):
-        print(f'root dir: "{args.root_dir}"')
+        root_dir: Path = args.root_dir
+        print(f'root dir: "{root_dir}"')
+        if not root_dir.exists():
+            print('Create root dir...')
+            root_dir.mkdir()
+            autoload_src_path = PACKAGE_ROOT / 'dwload-demo-files' / 'AUTOLOAD.DWL.py'
+            if not autoload_src_path.is_file():
+                raise FileNotFoundError(autoload_src_path)
+            print(f'Copy {autoload_src_path} to root dir...')
+            shutil.copy(src=autoload_src_path, dst=root_dir / autoload_src_path.name)
+
         print(f'log level: {args.log_level!r}')
 
         interface = args.cmd2_statement.get()

@@ -8,27 +8,18 @@
 """
 
 
-import os
 import logging
-import sys
-import struct
 import math
-
-
-try:
-    import serial
-except ImportError as err:
-    raise ImportError("%s - Please install PySerial ! - http://pyserial.sourceforge.net" % err)
-
-try:
-    import dragonlib
-except ImportError as err:
-    raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
+import os
+import struct
+import sys
+from pathlib import Path
 
 from dragonlib.utils.byte_word_values import word2bytes
-from dwload_server.exceptions import DwNotReadyError, DwReadError, DwWriteError, DwException
-from dwload_server.utils.hook_handler import DW_HOOKS
+
 from dwload_server import constants
+from dwload_server.exceptions import DwException, DwNotReadyError, DwReadError, DwWriteError
+from dwload_server.utils.hook_handler import DW_HOOKS
 
 
 log = logging.getLogger(__name__)
@@ -55,7 +46,7 @@ def print_bytes(bytes):
         if item.isalnum():
             sys.stdout.write(item.decode("ascii"))
         else:
-            sys.stdout.write(" $%02x " % ord(item))
+            sys.stdout.write(f" ${ord(item):02x} ")
         sys.stdout.flush()
 
 
@@ -64,15 +55,18 @@ class DwLoadServer:
     The DWLOAD server
     """
 
-    def __init__(self, interface, root_dir):
+    def __init__(self, interface, root_dir: Path):
         self.interface = interface
-        self.root_dir = os.path.normpath(root_dir)
+        assert isinstance(root_dir, Path)
+        self.root_dir = root_dir
         log.info("Root directory is: %r", self.root_dir)
+        if not self.root_dir.is_dir():
+            raise NotADirectoryError(self.root_dir)
 
         # FIXME: Import for register and import it here, after logging init:
+        import dwload_server.hooks.dynamic_dwl
         import dwload_server.hooks.read_ascii
         import dwload_server.hooks.save_ascii
-        import dwload_server.hooks.dynamic_dwl
 
         self.drive_number = 256
         self.file_info = {}
@@ -148,7 +142,6 @@ class DwLoadServer:
 
         log.debug(" *** block send.")
 
-
     def write_transaction(self):
         self.filepath, lsn = self.get_filepath_lsn()
 
@@ -209,7 +202,8 @@ class DwLoadServer:
                     self.write_transaction()
                 else:
                     msg = "Request type $%02x (dez.: %i) is not supported, yet." % (
-                        req_type, req_type
+                        req_type,
+                        req_type,
                     )
                     if root_logger.level<=10:
                         raise NotImplementedError(msg)

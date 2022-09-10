@@ -8,24 +8,11 @@
 """
 
 
-import os
 import logging
 import socket
-import sys
 import time
 
-try:
-    import serial
-except ImportError as err:
-    raise ImportError("%s - Please install PySerial ! - http://pyserial.sourceforge.net" % err)
-
-try:
-    import dragonlib
-except ImportError as err:
-    raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
-
 from dwload_server.server_base import BaseServer, DwLoadServer
-from dragonlib.utils.logging_utils import setup_logging
 
 
 LOG_DEZ = False
@@ -79,14 +66,14 @@ class BeckerServer(BaseServer):
 
         if LOG_DEZ:
             log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        log.debug("\thex: %s", " ".join([f"${b:02x}" for b in data]))
         return data
 
     def write(self, data):
         log.debug("WRITE %i:", len(data))
         if LOG_DEZ:
             log.debug("\tdez: %s", " ".join(["%i" % b for b in data]))
-        log.debug("\thex: %s", " ".join(["$%02x" % b for b in data]))
+        log.debug("\thex: %s", " ".join([f"${b:02x}" for b in data]))
         self.conn.sendall(data)
 
 
@@ -94,18 +81,3 @@ def run_becker_server(root_dir, ip="127.0.0.1", port=65504):
     dwload_server = BeckerServer(ip=ip, port=port, root_dir=root_dir)
     dwload_server.serve_forever()
 
-
-if __name__ == '__main__':
-    print("\nDirect run, only for testing!", file=sys.stderr)
-    print("Please use cli!\n", file=sys.stderr, flush=True)
-
-    sys.argv += [
-        "--root_dir=~/dwload-files", "--log_level=10",
-        "becker", "--ip=127.0.0.1", "--port=65504"
-    ]
-
-    from dwload_server.dwload_server_cli import DwLoadServerCLI
-    cli = DwLoadServerCLI()
-    cli.run()
-
-    print(" --- END --- ")

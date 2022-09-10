@@ -83,7 +83,7 @@ omit = [".*"]
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/latest/customize.html#pyproject-toml
 minversion = "6.0"
-norecursedirs = ".* __pycache__ coverage* dist htmlcov"
+norecursedirs = ".* __pycache__ coverage* dist htmlcov dwload-demo-files"
 # sometimes helpfull "addopts" arguments:
 #    -vv
 #    --verbose
