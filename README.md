@@ -195,9 +195,13 @@ You can also run as cli, e.g.: Start serial DWLOAD server:
 
 ## History
 
-* [**dev**](https://github.com/6809/DwLoadServer/compare/v0.3.0...main)
+* [**dev**](https://github.com/6809/DwLoadServer/compare/v0.5.0...main)
+  * ...tbc...
+* [11.09.2022 - v0.5.0](https://github.com/6809/DwLoadServer/compare/v0.4.0...v0.5.0)
   * Modernize project
-  * Use dev-shell
+  * Easier bootstrap via dev-shell
+* [20.11.2014 - v0.4.0](https://github.com/6809/DwLoadServer/compare/v0.3.0...v0.4.0)
+  * dynamic `AUTOLOAD.DWL` via Python script
 * [19.11.2014 - v0.3.0](https://github.com/6809/DwLoadServer/compare/v0.2.0...v0.3.0)
   * Convert "ASCII BASIC listing" <-> "Dragon DOS Binary" on-the-fly while read/write
 * [17.11.2014 - v0.2.0](https://github.com/6809/DwLoadServer/compare/v0.1.1...v0.2.0)
@@ -208,14 +212,14 @@ You can also run as cli, e.g.: Start serial DWLOAD server:
 
 ## Links
 
-|              |                  |
-|--------------|------------------|
-| Forum Thread | [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946) |
-| PyPi         | [https://pypi.python.org/pypi/dwload_server/](https://pypi.python.org/pypi/dwload_server/)                                           |
-| Github       | [https://github.com/6809/DwLoadServer](https://github.com/6809/DwLoadServer)                                                         |
+|                   |                                                                                                                                                                                   |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum Thread (en) | [worldofdragon.org](https://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946)                                                                                            |
+| Forum Thread (de) | [forum.classic-computing.de](https://forum.classic-computing.de/forum/index.php?thread/20839-dwload-drivewire-for-everybody-daten%C3%BCbertragung-pc-dragon-32-64/&postID=245227) |
+| PyPi              | [https://pypi.python.org/pypi/dwload_server/](https://pypi.python.org/pypi/dwload_server/)                                                                                        |
+| Github            | [https://github.com/6809/DwLoadServer](https://github.com/6809/DwLoadServer)                                                                                                      |
 
 some project related links:
-
 
 * About DWLOAD: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964)
 * DWEEBS application Thread: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968)
