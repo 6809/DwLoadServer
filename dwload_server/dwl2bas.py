@@ -16,7 +16,7 @@ try:
     import dragonlib
     from dragonlib.api import Dragon32API as Api
 except ImportError as err:
-    raise ImportError("dragonlib from https://github.com/jedie/DragonPy is needed: %s" % err)
+    raise ImportError(f"dragonlib from https://github.com/jedie/DragonPy is needed: {err}")
 
 
 log = logging.getLogger(__name__)

@@ -61,7 +61,7 @@ def save_ascii_post_write_hook(server, filepath, lsn):
     with open(filepath, "rb") as f:
         content = f.read()
 
-    log_hexlines(content, msg="%s data:" % os.path.basename(filepath), level=logging.DEBUG)
+    log_hexlines(content, msg=f"{os.path.basename(filepath)} data:", level=logging.DEBUG)
 
     if not content.endswith(b"\x00\x00\x00"):
         log.info("File ends not with $00 $00 $00, ok.")

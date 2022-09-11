@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dwload_server"
-version = "0.5.0.rc1"
+version = "0.5.0"
 description = "DWLOAD server implemented in Python"
 authors = ["JensDiemer <dwload_server@jensdiemer.de>"]
 packages = [{ include = "dwload_server" }]

@@ -5,4 +5,6 @@
 """
 
 from dwload_server.pyscripts.autoload_dwl import cli
-cli()
+
+
+cli()  # write the Dragon DOS binary data back to stdout

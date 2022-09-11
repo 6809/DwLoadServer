@@ -2,10 +2,21 @@
 
 DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
 
+Connect your Dragon 32 into your PC and LOAD/SAVE basic listings.
+
+![Dragon32DriveWire1small.jpeg](https://raw.githubusercontent.com/jedie/jedie.github.io/master/screenshots/DwLoadServer/Dragon32DriveWire1small.jpeg "Dragon32DriveWire1small.jpeg")
+
+
+## Quickstart
+
+```bash
+~$ git clone https://github.com/6809/DwLoadServer.git
+~$ cd DwLoadServer
+~/DwLoadServer$ ./devshell.py run serial
+```
+
+
 ## features
-
-Here a feature list:
-
 
 * load/save files via DWLOAD
 * on-the-fly converting ASCII BASIC listing (see below)
@@ -14,8 +25,6 @@ Here a feature list:
 * Support [USB Adapter](http://archive.worldofdragon.org/index.php?title=Dragon_32/64_Drivewire_Adapter) and [Becker TCP/IP Interface](http://www.6809.org.uk/xroar/doc/xroar.shtml#Becker-port).
 
 ### current state
-
-Only tested with Python 3 !
 
 Tested DWEEBS:
 
@@ -28,7 +37,8 @@ Tested DWEEBS:
 Implemented DriveWire Transactions:
 
 | hex | dez | DW name           | Description                                                              |
-| --- | --- | ----------------- | ------------------------------------------------------------------------ |
+|-----| --- | ----------------- | ------------------------------------------------------------------------ |
+| $00 | 0   | OP_NOP            | NOP Transaction -> ignored                                               |
 | $01 | 1   | OP_NAMEOBJ_MOUNT  | Mount a file to a virtual drive number                                   |
 | $02 | 2   | OP_NAMEOBJ_CREATE | (Does in this implementation the same as OP_NAMEOBJ_MOUNT)               |
 | $d2 | 210 | OP_READEX         | Send 256 bytes sector from the DWLOAD server to the client               |
@@ -36,23 +46,20 @@ Implemented DriveWire Transactions:
 
 ### TODO
 
-
 * enhance `AUTOLOAD.DWL.py`, see: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4977)
 * compare checksum
-* add support for Python 2.7
 * write unittests
 
 ### pyscripts
 
 There is a general machanism to generate DLOAD responses via Python:
 
-
 * Store in server root a python script, e.g.: "FOO.BAR.py"
 * DLOAD the file (without .py extension) on client, e.g.: `DLOAD"FOO.BAR"`
 
 The script will be called via subprocess and it must write the Dragon DOS binary data back to stdout.
 
-Currently there is only one _pyscript_ file: `AUTOLOAD.DWL.py` (see below)
+Currently, there is only one _pyscript_ file: `AUTOLOAD.DWL.py` (see below)
 
 #### dynamic "AUTOLOAD.DWL"
 
@@ -135,191 +142,84 @@ This feature make the following files:
 
 ## installation
 
-### Linux
+Clone sources and bootstrap via [dev-shell](https://github.com/jedie/dev-shell), e.g.:
 
-The is a virtualenv bootstrap file, created with [bootstrap_env](https://github.com/jedie/bootstrap_env), for easy installation.
+```bash
+~$ git clone https://github.com/6809/DwLoadServer.git
+~$ cd DwLoadServer
+~/DwLoadServer$ ./devshell.py
 
-Get the bootstrap file:
-```
-/home/FooBar$ wget https://raw.githubusercontent.com/6809/DwLoadServer/master/boot_dwload_server.py
-```
+...
 
-There are tree types of installation:
-
-| option           | desciption                                                                     |
-| ---------------- | ------------------------------------------------------------------------------ |
-| **pypi**         | use [Python Package Index](http://www.python.org/pypi/) (for all normal user!) |
-| **git_readonly** | use `git` to get the sourcecode (for developer without write access)           |
-| **dev**          | use `git` with write access                                                    |
-
-e.g.:
-```
-/home/FooBar$ python3 boot_dwload_server.py ~/DwLoadServer_env --install_type git_readonly
-```
-
-This creates a virtualenv in **`~/DwLoadServer_env`** and used `git` to checkout the needed repositories.
-
-In this case (using --install_type=**git_readonly**) the git repository are in: **.../DwLoadServer_env/src/**
-So you can easy update them e.g.:
-```
-/home/FooBar$ cd ~/DwLoadServer_env/src/dwload-server
-/home/FooBar/DwLoadServer_env/src/dwload-server$ git pull
-```
-
-### Windows
-
-There are several ways to install the project under windows.
-
-The following is hopeful the easiest one:
+Developer shell - DWLOAD Server - v0.4.0
 
 
-* Install Python 3, e.g.: [https://www.python.org/downloads/](https://www.python.org/downloads/)
-* Download the `DWLOAD Server` git snapshot from Github: [master.zip](https://github.com/6809/DwLoadServer/archive/master.zip)
-* Extract the Archive somewhere
-* Maybe, adjust paths in `boot_dwload_server.cmd`
-* Run `boot_dwload_server.cmd`
+Documented commands (use 'help -v' for verbose/'help <topic>' for details):
 
-The default `boot_dwload_server.cmd` will install via `Python Package Index` (PyPi) into `%APPDATA%\DwLoadServer_env`
+dev-shell commands
+==================
+fix_code_style      poetry   pytest     tox
+list_venv_packages  publish  pyupgrade  update
 
-There are two batch files, for easy startup the server under Windows:
+DWLOAD Server Commands
+======================
+run
 
-
-* [/scripts/start_serial_DWLOAD_server.cmd](https://github.com/6809/DwLoadServer/blob/master/scripts/start_serial_DWLOAD_server.cmd)
-* [/scripts/start_becker_DWLOAD_server.cmd](https://github.com/6809/DwLoadServer/blob/master/scripts/start_becker_DWLOAD_server.cmd)
-
-Copy these files into `%APPDATA%\DwLoadServer_env` and edit it for your needs.
-Just double click to start the server.
-
-#### start by cli (windows)
-
-There is a batch file to open a commandline with a activated virtualenv:
+Uncategorized
+=============
+alias  help  history  macro  quit  set  shortcuts
 
 
-* [/scripts/cmd_here.cmd](https://github.com/6809/DwLoadServer/blob/master/scripts/cmd_here.cmd)
-
-copy this into `%APPDATA%\DwLoadServer_env` and double click it ;)
-
-by hand: Start **cmd.exe** and do this:
-```
-C:\Windows\system32>cd /d %APPDATA%\DwLoadServer_env\
-C:\Users\FOO\AppData\Roaming\DwLoadServer_env>call Scripts\activate.bat
-(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env>
-```
-
-So use the DWLOAD-Server CLI, e.g:
-```
-(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env> python.exe -m dwload_server.dwload_server_cli --root_dir=%APPDATA%\dwload-files\ --log_level=10 serial --port=COM3
-```
-
-Do see the CLI help page:
-```
-(DwLoadServer_env) C:\Users\FOO\AppData\Roaming\DwLoadServer_env> python.exe -m dwload_server.dwload_server_cli --help
-
-DWLOAD Server written in Python (GNU GPL v3+) v0.2.0
-
-usage: dwload_server_cli.py [-h] [--version] [--root_dir ROOT_DIR]
-                            [--log_level {0,10,20,30,30,40,50,99,100}]
-                            {becker,serial} ...
+(dwload_server) run --help
+Usage: run [-h] [--root-dir ROOT_DIR] [--log-level {0, 10, 20, 30, 30, 40, 50, 50, 99, 100}] {becker, serial} ...
 
 optional arguments:
   -h, --help            show this help message and exit
-  --version             show program's version number and exit
-  --root_dir ROOT_DIR   Server root directory for load/store requested files
-  --log_level {0,10,20,30,30,40,50,99,100}
-                        Logging level: 10=DEBUG, 20=INFO, 30=WARNING,
-                        40=ERROR, 50=CRITICAL/FATAL
+  --root-dir ROOT_DIR
+  --log-level {0, 10, 20, 30, 30, 40, 50, 50, 99, 100}
+                        Logging level: 10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL/FATAL (default: 20)
 
 Interface:
-  {becker,serial}
+  {becker, serial}
     becker              Use the Becker interface
     serial              Use the serial interface
 
-example usage:
-    dwload_server_cli.py --root_dir=./dwload-files/ serial --port=/dev/ttyUSB0
-    dwload_server_cli.py --root_dir=./dwload-files/ becker
-
-Interface help:
-    dwload_server_cli.py serial --help
-    dwload_server_cli.py becker --help
+(dwload_server) run serial
 ```
 
-### startup linux
-
-There are two shell scripts, for easy startup the server under Linux:
-
-
-* [/scripts/start_serial_DWLOAD_server.sh](https://github.com/6809/DwLoadServer/blob/master/scripts/start_serial_DWLOAD_server.sh)
-* [/scripts/start_becker_DWLOAD_server.sh](https://github.com/6809/DwLoadServer/blob/master/scripts/start_becker_DWLOAD_server.sh)
-
-Copy these files into `~/DwLoadServer_env/` and edit it for your needs.
-
-The default DWLOAD-Server-root-directory is: `~/dwload-files/`
-e.g.: Download `dwload-demo-files.tar.xz.zip` from [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964)
-and extract the files into `~/dwload-files/`
-
-#### start by cli (linux)
-
-e.g.:
-```
-/home/FooBar $ cd ~/DwLoadServer_env/
-/home/FooBar/DwLoadServer_env/ $ source bin/activate
-(DwLoadServer_env) ~/DwLoadServer_env $ python3 -m dwload_server.dwload_server_cli --root_dir=~/dwload-files --log_level=10 serial --port=/dev/ttyUSB0
+You can also run as cli, e.g.: Start serial DWLOAD server:
+```bash
+~/DwLoadServer$ ./devshell.py run serial
 ```
 
-Display CLI help, e.g:
-```
-/home/FooBar $ cd ~/DwLoadServer_env/
-/home/FooBar/DwLoadServer_env/ $ source bin/activate
-(DwLoadServer_env) ~/DwLoadServer_env $ python3 -m dwload_server.dwload_server_cli --help
-
-DWLOAD Server written in Python (GNU GPL v3+) v0.2.0
-
-usage: dwload_server_cli.py [-h] [--version] [--root_dir ROOT_DIR]
-                            [--log_level {0,10,20,30,30,40,50,99,100}]
-                            {becker,serial} ...
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --version             show program's version number and exit
-  --root_dir ROOT_DIR   Server root directory for load/store requested files
-  --log_level {0,10,20,30,30,40,50,99,100}
-                        Logging level: 10=DEBUG, 20=INFO, 30=WARNING,
-                        40=ERROR, 50=CRITICAL/FATAL
-
-Interface:
-  {becker,serial}
-    becker              Use the Becker interface
-    serial              Use the serial interface
-
-example usage:
-    dwload_server_cli.py --root_dir=./dwload-files/ serial --port=/dev/ttyUSB0
-    dwload_server_cli.py --root_dir=./dwload-files/ becker
-
-Interface help:
-    dwload_server_cli.py serial --help
-    dwload_server_cli.py becker --help
-
-```
 
 ## History
 
-
-* 19.11.2014 - v0.3.0 - Convert "ASCII BASIC listing" <-> "Dragon DOS Binary" on-the-fly while read/write
-* 17.11.2014 - v0.2.0 - Support Becker and Serial interface.
+* [**dev**](https://github.com/6809/DwLoadServer/compare/v0.5.0...main)
+  * ...tbc...
+* [11.09.2022 - v0.5.0](https://github.com/6809/DwLoadServer/compare/v0.4.0...v0.5.0)
+  * Modernize project
+  * Easier bootstrap via dev-shell
+* [20.11.2014 - v0.4.0](https://github.com/6809/DwLoadServer/compare/v0.3.0...v0.4.0)
+  * dynamic `AUTOLOAD.DWL` via Python script
+* [19.11.2014 - v0.3.0](https://github.com/6809/DwLoadServer/compare/v0.2.0...v0.3.0)
+  * Convert "ASCII BASIC listing" <-> "Dragon DOS Binary" on-the-fly while read/write
+* [17.11.2014 - v0.2.0](https://github.com/6809/DwLoadServer/compare/v0.1.1...v0.2.0)
+  * Support Becker and Serial interface.
 * 14.11.2014 - v0.1.0 - Create bootstrap file that work under linux and windows.
 * 12.11.2014 - v0.0.1 - send a file works rudimentary
 * 30.09.2014 - Idea was born: [Forum post 11893](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946#p11893)
 
 ## Links
 
-|              |                  |
-|--------------|------------------|
-| Forum Thread | [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946) |
-| PyPi         | [https://pypi.python.org/pypi/dwload_server/](https://pypi.python.org/pypi/dwload_server/)                                           |
-| Github       | [https://github.com/6809/DwLoadServer](https://github.com/6809/DwLoadServer)                                                         |
+|                   |                                                                                                                                                                                   |
+|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Forum Thread (en) | [worldofdragon.org](https://archive.worldofdragon.org/phpBB3/viewtopic.php?f=8&t=4946)                                                                                            |
+| Forum Thread (de) | [forum.classic-computing.de](https://forum.classic-computing.de/forum/index.php?thread/20839-dwload-drivewire-for-everybody-daten%C3%BCbertragung-pc-dragon-32-64/&postID=245227) |
+| PyPi              | [https://pypi.python.org/pypi/dwload_server/](https://pypi.python.org/pypi/dwload_server/)                                                                                        |
+| Github            | [https://github.com/6809/DwLoadServer](https://github.com/6809/DwLoadServer)                                                                                                      |
 
 some project related links:
-
 
 * About DWLOAD: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4964)
 * DWEEBS application Thread: [http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968](http://archive.worldofdragon.org/phpBB3/viewtopic.php?f=5&t=4968)
