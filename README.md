@@ -2,6 +2,20 @@
 
 DWLOAD server implemented in Python (OpenSource, GPL v3 or above).
 
+Connect your Dragon 32 into your PC and LOAD/SAVE basic listings.
+
+![Dragon32DriveWire1small.jpeg](https://raw.githubusercontent.com/jedie/jedie.github.io/master/screenshots/DwLoadServer/Dragon32DriveWire1small.jpeg "Dragon32DriveWire1small.jpeg")
+
+
+## Quickstart
+
+```bash
+~$ git clone https://github.com/6809/DwLoadServer.git
+~$ cd DwLoadServer
+~/DwLoadServer$ ./devshell.py run serial
+```
+
+
 ## features
 
 * load/save files via DWLOAD
