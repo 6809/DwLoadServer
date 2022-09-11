@@ -118,7 +118,7 @@ class DevShellCommandSet(OriginDevShellCommandSet):
         poetry_publish(
             package_root=PACKAGE_ROOT,
             version=dwload_server.__version__,
-            creole_readme=True,  # don't publish if README.rst is not up-to-date
+            creole_readme=False,
         )
 
 
