@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dwload_server"
-version = "0.5.0"
+version = "0.5.1"
 description = "DWLOAD server implemented in Python"
 authors = ["JensDiemer <dwload_server@jensdiemer.de>"]
 packages = [{ include = "dwload_server" }]
@@ -25,7 +25,7 @@ homepage="https://github.com/6809/DwLoadServer"
 
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+python = ">=3.9,<4.0"
 dragonlib = "*"  # https://github.com/6809/dragonlib
 pyserial = "*"  # https://github.com/pyserial/pyserial
 
@@ -113,7 +113,7 @@ addopts = """
 legacy_tox_ini = """
 [tox]
 isolated_build = True
-envlist = py310,py39,py38
+envlist = py311,py310,py39
 skip_missing_interpreters = True
 [testenv]
 passenv = *
